@@ -1,0 +1,359 @@
+{% extends 'base.html' %}
+{% block title %}Loan Management | Payroll{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+  <h1>💳 Loan Management</h1>
+  <p>Manage employee loans and payment schedules</p>
+</div>
+
+<!-- Summary Statistics -->
+<div class="stats-grid">
+  <div class="stat-card total">
+    <div class="stat-icon">💳</div>
+    <div class="stat-content">
+      <h3>{{ loans.count }}</h3>
+      <p>Total Active Loans</p>
+    </div>
+  </div>
+  
+  <div class="stat-card amount">
+    <div class="stat-icon">💰</div>
+    <div class="stat-content">
+      <h3>₱{% widthratio loans.count 1 0 as total_principal %}{{ total_principal|floatformat:2 }}</h3>
+      <p>Total Principal Amount</p>
+    </div>
+  </div>
+  
+  <div class="stat-card outstanding">
+    <div class="stat-icon">📊</div>
+    <div class="stat-content">
+      <h3>₱{% widthratio loans.count 1 0 as total_remaining %}{{ total_remaining|floatformat:2 }}</h3>
+      <p>Total Outstanding</p>
+    </div>
+  </div>
+  
+  <div class="stat-card monthly">
+    <div class="stat-icon">📅</div>
+    <div class="stat-content">
+      <h3>₱{% widthratio loans.count 1 0 as total_monthly %}{{ total_monthly|floatformat:2 }}</h3>
+      <p>Monthly Deductions</p>
+    </div>
+  </div>
+</div>
+
+<!-- Loan Management Actions -->
+<div class="section-card">
+  <div class="section-header">
+    <h3>💳 Loan Management</h3>
+    <div class="header-actions">
+      <a href="/payroll/loans/create/" class="btn btn-primary">➕ Add New Loan</a>
+      <a href="/payroll/loans/report/" class="btn btn-outline">📊 Generate Report</a>
+    </div>
+  </div>
+  
+  {% if loans %}
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Loan Type</th>
+            <th>Principal Amount</th>
+            <th>Remaining Balance</th>
+            <th>Monthly Deduction</th>
+            <th>Progress</th>
+            <th>Start Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for loan in loans %}
+          <tr>
+            <td>
+              <div class="employee-info">
+                <strong>{{ loan.employee.first_name }} {{ loan.employee.last_name }}</strong><br>
+                <small>{{ loan.employee.employee_no }}</small>
+              </div>
+            </td>
+            <td>
+              <span class="loan-type-badge loan-{{ loan.loan_type|lower }}">
+                {% if loan.loan_type == 'SALARY' %}💰 Salary Loan
+                {% elif loan.loan_type == 'EMERGENCY' %}🚨 Emergency Loan
+                {% elif loan.loan_type == 'HOUSING' %}🏠 Housing Loan
+                {% else %}📋 Other Loan{% endif %}
+              </span>
+            </td>
+            <td class="amount">₱{{ loan.principal_amount|floatformat:2 }}</td>
+            <td class="amount">₱{{ loan.remaining_balance|floatformat:2 }}</td>
+            <td class="amount">₱{{ loan.monthly_deduction|floatformat:2 }}</td>
+            <td>
+              <div class="progress-container">
+                {% widthratio loan.principal_amount|add:"-"|add:loan.remaining_balance loan.principal_amount 100 as progress_percent %}
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: {{ progress_percent }}%"></div>
+                </div>
+                <small>{{ progress_percent }}% paid</small>
+              </div>
+            </td>
+            <td>{{ loan.start_date|date:"M d, Y" }}</td>
+            <td>
+              {% if loan.is_active %}
+                <span class="status-badge status-active">✅ Active</span>
+              {% else %}
+                <span class="status-badge status-inactive">❌ Inactive</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="action-buttons">
+                <a href="/payroll/loans/{{ loan.id }}/detail/" class="btn btn-sm btn-outline">👁️ View</a>
+                <a href="/payroll/loans/{{ loan.id }}/edit/" class="btn btn-sm btn-outline">✏️ Edit</a>
+                {% if loan.is_active %}
+                  <a href="/payroll/loans/{{ loan.id }}/payment/" class="btn btn-sm btn-success">💰 Payment</a>
+                  <a href="/payroll/loans/{{ loan.id }}/deactivate/" class="btn btn-sm btn-warning">⏸️ Deactivate</a>
+                {% else %}
+                  <a href="/payroll/loans/{{ loan.id }}/activate/" class="btn btn-sm btn-success">▶️ Activate</a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">💳</div>
+      <h3>No Active Loans</h3>
+      <p>No loans are currently active in the system.</p>
+      <a href="/payroll/loans/create/" class="btn btn-primary">➕ Add First Loan</a>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Loan Types Summary -->
+<div class="section-card">
+  <h3>📊 Loan Types Overview</h3>
+  <div class="loan-types-grid">
+    {% regroup loans by loan_type as loans_by_type %}
+    {% for loan_type in loans_by_type %}
+    <div class="loan-type-card">
+      <div class="loan-type-header">
+        <h4>
+          {% if loan_type.grouper == 'SALARY' %}💰 Salary Loans
+          {% elif loan_type.grouper == 'EMERGENCY' %}🚨 Emergency Loans
+          {% elif loan_type.grouper == 'HOUSING' %}🏠 Housing Loans
+          {% else %}📋 Other Loans{% endif %}
+        </h4>
+        <span class="loan-count">{{ loan_type.list|length }} loans</span>
+      </div>
+      <div class="loan-type-stats">
+        <div class="stat-item">
+          <label>Total Principal:</label>
+          <span>₱{% widthratio loan_type.list|length 1 0 as type_principal %}{{ type_principal|floatformat:2 }}</span>
+        </div>
+        <div class="stat-item">
+          <label>Total Outstanding:</label>
+          <span>₱{% widthratio loan_type.list|length 1 0 as type_outstanding %}{{ type_outstanding|floatformat:2 }}</span>
+        </div>
+        <div class="stat-item">
+          <label>Monthly Deductions:</label>
+          <span>₱{% widthratio loan_type.list|length 1 0 as type_monthly %}{{ type_monthly|floatformat:2 }}</span>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="empty-loan-types">
+      <p>No loans to categorize.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Recent Loan Activity -->
+<div class="section-card">
+  <h3>🕒 Recent Loan Activity</h3>
+  {% if loans %}
+    <div class="activity-list">
+      {% for loan in loans|slice:":5" %}
+      <div class="activity-item">
+        <div class="activity-icon">💳</div>
+        <div class="activity-content">
+          <strong>{{ loan.employee.first_name }} {{ loan.employee.last_name }}</strong>
+          <p>{{ loan.get_loan_type_display }} - ₱{{ loan.principal_amount|floatformat:2 }}</p>
+          <small>Started {{ loan.start_date|date:"M d, Y" }}</small>
+        </div>
+        <div class="activity-status">
+          {% if loan.is_active %}
+            <span class="status-active">Active</span>
+          {% else %}
+            <span class="status-inactive">Inactive</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-activity">
+      <p>No recent loan activity.</p>
+    </div>
+  {% endif %}
+</div>
+
+<style>
+.loan-type-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.loan-salary { background: #e3f2fd; color: #1565c0; }
+.loan-emergency { background: #ffebee; color: #c62828; }
+.loan-housing { background: #e8f5e8; color: #2e7d32; }
+.loan-other { background: #f3e5f5; color: #7b1fa2; }
+
+.progress-container {
+  min-width: 120px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50, #66bb6a);
+  transition: width 0.3s ease;
+}
+
+.loan-types-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.loan-type-card {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.loan-type-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.loan-type-header h4 {
+  margin: 0;
+  font-size: 1.1em;
+}
+
+.loan-count {
+  background: #007bff;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+}
+
+.loan-type-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.stat-item:last-child {
+  border-bottom: none;
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+}
+
+.activity-icon {
+  font-size: 1.5em;
+  margin-right: 1rem;
+}
+
+.activity-content {
+  flex: 1;
+}
+
+.activity-content strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.activity-content p {
+  margin: 0.25rem 0;
+  color: #666;
+}
+
+.activity-content small {
+  color: #999;
+}
+
+.activity-status {
+  text-align: right;
+}
+
+.status-active {
+  color: #28a745;
+  font-weight: 500;
+}
+
+.status-inactive {
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.empty-icon {
+  font-size: 4em;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  color: #999;
+  margin-bottom: 2rem;
+}
+</style>
+{% endblock %}

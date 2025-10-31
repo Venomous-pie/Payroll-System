@@ -1,0 +1,489 @@
+{% extends 'base.html' %}
+{% block title %}Benefits Management | Staff/HR{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+  <h1>Benefits & Deductions Management</h1>
+  <p>Manage employee loans, deductions, and benefits</p>
+</div>
+
+<!-- Summary Statistics -->
+<div class="stats-grid">
+  <div class="stat-card loans">
+    <div class="stat-icon">💳</div>
+    <div class="stat-content">
+      <h3>{{ active_loans|length }}</h3>
+      <p>Active Loans</p>
+    </div>
+  </div>
+  
+  <div class="stat-card amount">
+    <div class="stat-icon">💰</div>
+    <div class="stat-content">
+      <h3>₱{{ total_loan_amount|floatformat:2 }}</h3>
+      <p>Total Loan Balance</p>
+    </div>
+  </div>
+  
+  <div class="stat-card monthly">
+    <div class="stat-icon">📅</div>
+    <div class="stat-content">
+      <h3>₱{{ total_monthly_deductions|floatformat:2 }}</h3>
+      <p>Monthly Deductions</p>
+    </div>
+  </div>
+  
+  <div class="stat-card other">
+    <div class="stat-icon">📋</div>
+    <div class="stat-content">
+      <h3>{{ active_deductions|length }}</h3>
+      <p>Other Deductions</p>
+    </div>
+  </div>
+</div>
+
+<!-- Active Loans Section -->
+<div class="section-card">
+  <div class="section-header">
+    <h3>💳 Active Employee Loans</h3>
+    <a href="/payroll/loans/create/" class="btn btn-primary btn-sm">➕ Add New Loan</a>
+  </div>
+  
+  {% if active_loans %}
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Loan Type</th>
+            <th>Principal Amount</th>
+            <th>Monthly Deduction</th>
+            <th>Remaining Balance</th>
+            <th>Start Date</th>
+            <th>Progress</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for loan in active_loans %}
+          <tr>
+            <td>
+              <strong>{{ loan.employee.first_name }} {{ loan.employee.last_name }}</strong><br>
+              <small>{{ loan.employee.employee_no }}</small>
+            </td>
+            <td>
+              <span class="loan-type loan-{{ loan.loan_type|lower }}">{{ loan.get_loan_type_display }}</span>
+            </td>
+            <td class="amount">₱{{ loan.principal_amount|floatformat:2 }}</td>
+            <td class="amount">₱{{ loan.monthly_deduction|floatformat:2 }}</td>
+            <td class="amount">₱{{ loan.remaining_balance|floatformat:2 }}</td>
+            <td>{{ loan.start_date|date:"M d, Y" }}</td>
+            <td>
+              <div class="progress-bar">
+                {% if loan.principal_amount and loan.remaining_balance %}
+                  <div class="progress-fill" style="width: {% widthratio loan.remaining_balance loan.principal_amount 100 %}%"></div>
+                  <span class="progress-text">Remaining: {% widthratio loan.remaining_balance loan.principal_amount 100 %}%</span>
+                {% else %}
+                  <div class="progress-fill" style="width: 100%"></div>
+                  <span class="progress-text">Paid: 100%</span>
+                {% endif %}
+              </div>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <a href="/payroll/loans/{{ loan.id }}/edit/" class="btn btn-sm btn-outline">Edit</a>
+                <a href="/payroll/loans/{{ loan.id }}/deactivate/" class="btn btn-sm btn-warning">Deactivate</a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p>No active loans found.</p>
+      <a href="/payroll/loans/create/" class="btn btn-primary">➕ Add First Loan</a>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Other Deductions Section -->
+<div class="section-card">
+  <div class="section-header">
+    <h3>📋 Other Deductions</h3>
+    <a href="/payroll/deductions/create/" class="btn btn-primary btn-sm">➕ Add New Deduction</a>
+  </div>
+  
+  {% if active_deductions %}
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Type</th>
+            <th>Created Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for deduction in active_deductions %}
+          <tr>
+            <td>
+              <strong>{{ deduction.employee.first_name }} {{ deduction.employee.last_name }}</strong><br>
+              <small>{{ deduction.employee.employee_no }}</small>
+            </td>
+            <td>{{ deduction.description }}</td>
+            <td class="amount">₱{{ deduction.amount|floatformat:2 }}</td>
+            <td>
+              {% if deduction.is_recurring %}
+                <span class="deduction-type recurring">🔄 Recurring</span>
+              {% else %}
+                <span class="deduction-type one-time">1️⃣ One-time</span>
+              {% endif %}
+            </td>
+            <td>{{ deduction.created_at|date:"M d, Y" }}</td>
+            <td>
+              <div class="action-buttons">
+                <a href="/payroll/deductions/{{ deduction.id }}/edit/" class="btn btn-sm btn-outline">Edit</a>
+                <a href="/payroll/deductions/{{ deduction.id }}/deactivate/" class="btn btn-sm btn-warning">Deactivate</a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p>No other deductions found.</p>
+      <a href="/payroll/deductions/create/" class="btn btn-primary">➕ Add First Deduction</a>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Benefits Overview -->
+<div class="section-card">
+  <h3>🎯 Government Benefits Overview</h3>
+  <div class="benefits-grid">
+    <div class="benefit-card">
+      <div class="benefit-icon">🏥</div>
+      <div class="benefit-content">
+        <h4>SSS Contributions</h4>
+        <p>Social Security System contributions are automatically calculated based on salary grades.</p>
+      </div>
+    </div>
+    
+    <div class="benefit-card">
+      <div class="benefit-icon">🏥</div>
+      <div class="benefit-content">
+        <h4>PhilHealth</h4>
+        <p>Health insurance contributions for all employees as mandated by law.</p>
+      </div>
+    </div>
+    
+    <div class="benefit-card">
+      <div class="benefit-icon">🏠</div>
+      <div class="benefit-content">
+        <h4>Pag-IBIG</h4>
+        <p>Home Development Mutual Fund contributions for housing benefits.</p>
+      </div>
+    </div>
+    
+    <div class="benefit-card">
+      <div class="benefit-icon">💼</div>
+      <div class="benefit-content">
+        <h4>Withholding Tax</h4>
+        <p>Income tax deductions calculated according to BIR tax tables.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="actions">
+  <a href="/payroll/loans/" class="btn btn-primary">💳 Manage All Loans</a>
+  <a href="/payroll/deductions/" class="btn btn-outline">📋 Manage All Deductions</a>
+  <a href="/staff/" class="btn btn-secondary">🏠 Back to Staff Dashboard</a>
+</div>
+
+<style>
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border-left: 4px solid;
+}
+
+.stat-card.loans {
+  border-left-color: #007bff;
+}
+
+.stat-card.amount {
+  border-left-color: #28a745;
+}
+
+.stat-card.monthly {
+  border-left-color: #ffc107;
+}
+
+.stat-card.other {
+  border-left-color: #6f42c1;
+}
+
+.stat-icon {
+  font-size: 2rem;
+}
+
+.stat-content h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.stat-content p {
+  margin: 5px 0 0 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.section-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin: 20px 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.section-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-top: 15px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.data-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.data-table tr:hover {
+  background: #f8f9fa;
+}
+
+.amount {
+  font-family: monospace;
+  font-weight: 600;
+  color: #28a745;
+}
+
+.loan-type {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.loan-salary {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.loan-emergency {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.loan-housing {
+  background: #e8f5e8;
+  color: #2e7d32;
+}
+
+.loan-other {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.progress-bar {
+  position: relative;
+  width: 100px;
+  height: 20px;
+  background: #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #28a745, #20c997);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.deduction-type {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.deduction-type.recurring {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.deduction-type.one-time {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 0.8rem;
+}
+
+.btn-outline {
+  background: transparent;
+  color: #007bff;
+  border: 1px solid #007bff;
+}
+
+.btn-outline:hover {
+  background: #007bff;
+  color: white;
+}
+
+.btn-warning {
+  background: #ffc107;
+  color: #212529;
+}
+
+.btn-warning:hover {
+  background: #e0a800;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.benefit-card {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.benefit-icon {
+  font-size: 1.5rem;
+}
+
+.benefit-content h4 {
+  margin: 0 0 5px 0;
+  color: #333;
+}
+
+.benefit-content p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.actions {
+  margin-top: 30px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+}
+</style>
+{% endblock %}

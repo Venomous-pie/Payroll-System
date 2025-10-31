@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Compliance Reports{% endblock %}
+{% block content %}
+<h1>Compliance Reports</h1>
+<div class="grid">
+  <div class="card"><h3>BIR Summary</h3><a class="btn" href="/reports/bir/">Open</a></div>
+  <div class="card"><h3>GSIS Summary</h3><a class="btn" href="/reports/gsis/">Open</a></div>
+  <div class="card"><h3>CSV Export</h3><a class="btn" href="/reports/export/sample/">Download</a></div>
+</div>
+{% endblock %}

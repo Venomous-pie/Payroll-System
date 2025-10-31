@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Payslip Detail{% endblock %}
+{% block content %}
+<h1>Payslip Detail</h1>
+<div class="card">
+  <p><strong>Period:</strong> {{ slip.payroll_run.period_start }} to {{ slip.payroll_run.period_end }}</p>
+  <p><strong>Employee:</strong> {{ slip.employee }}</p>
+  <hr/>
+  <p><strong>Gross Pay:</strong> {{ slip.gross_pay }}</p>
+  <p><strong>SSS:</strong> {{ slip.sss }}</p>
+  <p><strong>PhilHealth:</strong> {{ slip.philhealth }}</p>
+  <p><strong>Pag-IBIG:</strong> {{ slip.pagibig }}</p>
+  <p><strong>Withholding Tax:</strong> {{ slip.tax }}</p>
+  <hr/>
+  <p><strong>Net Pay:</strong> {{ slip.net_pay }}</p>
+</div>
+<p><a class="btn" href="/payroll/my/payslips/">Back</a></p>
+{% endblock %}

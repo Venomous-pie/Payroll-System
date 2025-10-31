@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% block title %}My Leave History | PMS{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+  <h1>My Leave Request History</h1>
+  <p>Track all your leave requests and their current status</p>
+</div>
+
+{% if leaves %}
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Leave Type</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th>Days</th>
+          <th>Status</th>
+          <th>Reason</th>
+          <th>Decided By</th>
+          <th>Decision Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for leave in leaves %}
+        <tr>
+          <td>{{ leave.leave_type }}</td>
+          <td>{{ leave.start_date|date:"M d, Y" }}</td>
+          <td>{{ leave.end_date|date:"M d, Y" }}</td>
+          <td>
+            {% with days=leave.end_date|timeuntil:leave.start_date %}
+              {{ days|floatformat:0 }} day{{ days|pluralize }}
+            {% endwith %}
+          </td>
+          <td>
+            <span class="status-badge status-{{ leave.status|lower }}">
+              {{ leave.get_status_display }}
+            </span>
+          </td>
+          <td>{{ leave.reason|default:"No reason provided"|truncatewords:10 }}</td>
+          <td>{{ leave.decided_by|default:"Pending" }}</td>
+          <td>{{ leave.decided_at|date:"M d, Y"|default:"Pending" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="empty-state">
+    <h3>📋 No Leave Requests Found</h3>
+    <p>You haven't submitted any leave requests yet.</p>
+    <a href="/attendance/leaves/submit/" class="btn btn-primary">Submit Leave Request</a>
+  </div>
+{% endif %}
+
+<div class="actions" style="margin-top: 20px;">
+  <a href="/attendance/leaves/submit/" class="btn btn-primary">🏖️ Submit New Request</a>
+  <a href="/employee/" class="btn btn-secondary">🏠 Back to Dashboard</a>
+</div>
+
+<style>
+.table-container {
+  overflow-x: auto;
+  margin: 20px 0;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.data-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.data-table tr:hover {
+  background: #f8f9fa;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-approved {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-rejected {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  background: white;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+  padding: 10px 20px;
+  text-decoration: none;
+  border-radius: 4px;
+  margin: 5px;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+</style>
+{% endblock %}

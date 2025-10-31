@@ -1,0 +1,553 @@
+{% extends 'base.html' %}
+{% block title %}HR Settings | Staff/HR{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+  <h1>HR System Settings</h1>
+  <p>Configure HR system settings and manage system data</p>
+</div>
+
+<!-- System Statistics -->
+<div class="stats-grid">
+  <div class="stat-card payroll">
+    <div class="stat-icon">💰</div>
+    <div class="stat-content">
+      <h3>{{ total_payroll_runs }}</h3>
+      <p>Payroll Runs</p>
+    </div>
+  </div>
+  
+  <div class="stat-card payslips">
+    <div class="stat-icon">📄</div>
+    <div class="stat-content">
+      <h3>{{ total_payslips }}</h3>
+      <p>Payslips Generated</p>
+    </div>
+  </div>
+  
+  <div class="stat-card leaves">
+    <div class="stat-icon">🏖️</div>
+    <div class="stat-content">
+      <h3>{{ total_leave_requests }}</h3>
+      <p>Leave Requests</p>
+    </div>
+  </div>
+  
+  <div class="stat-card grades">
+    <div class="stat-icon">📊</div>
+    <div class="stat-content">
+      <h3>{{ salary_grades|length }}</h3>
+      <p>Salary Grades</p>
+    </div>
+  </div>
+</div>
+
+<!-- Salary Grades Management -->
+<div class="section-card">
+  <div class="section-header">
+    <h3>📊 Salary Grades Configuration</h3>
+    <a href="/employees/salary-grades/create/" class="btn btn-primary btn-sm">➕ Add New Grade</a>
+  </div>
+  
+  {% if salary_grades %}
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Grade Code</th>
+            <th>Step</th>
+            <th>Base Pay</th>
+            <th>Employees</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for grade in salary_grades %}
+          <tr>
+            <td>
+              <span class="grade-code">{{ grade.code }}</span>
+            </td>
+            <td>{{ grade.step }}</td>
+            <td class="amount">₱{{ grade.base_pay|floatformat:2 }}</td>
+            <td>
+              <span class="employee-count">{{ grade.employee_set.count }} employee{{ grade.employee_set.count|pluralize }}</span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <a href="/employees/salary-grades/{{ grade.id }}/edit/" class="btn btn-sm btn-outline">📝 Edit</a>
+                {% if grade.employee_set.count == 0 %}
+                  <a href="/employees/salary-grades/{{ grade.id }}/delete/" class="btn btn-sm btn-danger">🗑️ Delete</a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p>No salary grades configured.</p>
+      <a href="/employees/salary-grades/create/" class="btn btn-primary">➕ Create First Grade</a>
+    </div>
+  {% endif %}
+</div>
+
+<!-- System Configuration -->
+<div class="section-card">
+  <h3>⚙️ System Configuration</h3>
+  <div class="config-grid">
+    <div class="config-card">
+      <div class="config-icon">🏢</div>
+      <div class="config-content">
+        <h4>Company Settings</h4>
+        <p>Configure company information, address, and contact details.</p>
+        <a href="/staff/settings/company/" class="btn btn-sm btn-outline">Configure</a>
+      </div>
+    </div>
+    
+    <div class="config-card">
+      <div class="config-icon">💼</div>
+      <div class="config-content">
+        <h4>Payroll Settings</h4>
+        <p>Set payroll periods, tax rates, and contribution percentages.</p>
+        <a href="/staff/settings/payroll/" class="btn btn-sm btn-outline">Configure</a>
+      </div>
+    </div>
+    
+    <div class="config-card">
+      <div class="config-icon">📅</div>
+      <div class="config-content">
+        <h4>Leave Policies</h4>
+        <p>Configure leave types, allowances, and approval workflows.</p>
+        <a href="/staff/settings/leave-policies/" class="btn btn-sm btn-outline">Configure</a>
+      </div>
+    </div>
+    
+    <div class="config-card">
+      <div class="config-icon">⏰</div>
+      <div class="config-content">
+        <h4>Attendance Rules</h4>
+        <p>Set work hours, overtime rules, and attendance policies.</p>
+        <a href="/staff/settings/attendance/" class="btn btn-sm btn-outline">Configure</a>
+      </div>
+    </div>
+    
+    <div class="config-card">
+      <div class="config-icon">🏦</div>
+      <div class="config-content">
+        <h4>Bank Integration</h4>
+        <p>Configure bank file formats and transfer settings.</p>
+        <a href="/staff/settings/bank/" class="btn btn-sm btn-outline">Configure</a>
+      </div>
+    </div>
+    
+    <div class="config-card">
+      <div class="config-icon">📊</div>
+      <div class="config-content">
+        <h4>Report Templates</h4>
+        <p>Customize report formats and automated report schedules.</p>
+        <a href="/staff/settings/reports/" class="btn btn-sm btn-outline">Configure</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Data Management -->
+<div class="section-card">
+  <h3>🗃️ Data Management</h3>
+  <div class="data-management-grid">
+    <div class="data-card">
+      <div class="data-icon">📤</div>
+      <div class="data-content">
+        <h4>Export Data</h4>
+        <p>Export employee data, payroll records, and reports for backup or analysis.</p>
+        <div class="data-actions">
+          <a href="/staff/export/employees/" class="btn btn-sm btn-outline">Export Employees</a>
+          <a href="/staff/export/payroll/" class="btn btn-sm btn-outline">Export Payroll</a>
+          <a href="/staff/export/attendance/" class="btn btn-sm btn-outline">Export Attendance</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="data-card">
+      <div class="data-icon">📥</div>
+      <div class="data-content">
+        <h4>Import Data</h4>
+        <p>Import employee data, attendance records, and other bulk data from CSV files.</p>
+        <div class="data-actions">
+          <a href="/staff/import/employees/" class="btn btn-sm btn-outline">Import Employees</a>
+          <a href="/staff/import/attendance/" class="btn btn-sm btn-outline">Import Attendance</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="data-card">
+      <div class="data-icon">🗑️</div>
+      <div class="data-content">
+        <h4>Data Cleanup</h4>
+        <p>Clean up old records, archive inactive data, and maintain database performance.</p>
+        <div class="data-actions">
+          <a href="/staff/cleanup/old-records/" class="btn btn-sm btn-warning">Cleanup Old Records</a>
+          <a href="/staff/cleanup/archive/" class="btn btn-sm btn-outline">Archive Data</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="data-card">
+      <div class="data-icon">💾</div>
+      <div class="data-content">
+        <h4>Backup & Restore</h4>
+        <p>Create system backups and restore data from previous backups.</p>
+        <div class="data-actions">
+          <a href="/staff/backup/create/" class="btn btn-sm btn-success">Create Backup</a>
+          <a href="/staff/backup/restore/" class="btn btn-sm btn-outline">Restore Backup</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="section-card">
+  <h3>⚡ Quick Actions</h3>
+  <div class="quick-actions-grid">
+    <a href="/django-admin/" class="quick-action-card">
+      <div class="quick-action-icon">🔧</div>
+      <div class="quick-action-text">
+        <h4>Django Admin</h4>
+        <p>Access advanced system administration</p>
+      </div>
+    </a>
+    
+    <a href="/staff/audit-logs/" class="quick-action-card">
+      <div class="quick-action-icon">📋</div>
+      <div class="quick-action-text">
+        <h4>Audit Logs</h4>
+        <p>View system activity and user actions</p>
+      </div>
+    </a>
+    
+    <a href="/accounts/users/" class="quick-action-card">
+      <div class="quick-action-icon">👥</div>
+      <div class="quick-action-text">
+        <h4>User Management</h4>
+        <p>Manage user accounts and permissions</p>
+      </div>
+    </a>
+    
+    <a href="/staff/system-health/" class="quick-action-card">
+      <div class="quick-action-icon">💚</div>
+      <div class="quick-action-text">
+        <h4>System Health</h4>
+        <p>Check system status and performance</p>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="actions">
+  <a href="/django-admin/" class="btn btn-primary">🔧 Advanced Settings</a>
+  <a href="/staff/audit-logs/" class="btn btn-outline">📋 View Audit Logs</a>
+  <a href="/staff/" class="btn btn-secondary">🏠 Back to Staff Dashboard</a>
+</div>
+
+<style>
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border-left: 4px solid;
+}
+
+.stat-card.payroll {
+  border-left-color: #28a745;
+}
+
+.stat-card.payslips {
+  border-left-color: #007bff;
+}
+
+.stat-card.leaves {
+  border-left-color: #ffc107;
+}
+
+.stat-card.grades {
+  border-left-color: #6f42c1;
+}
+
+.stat-icon {
+  font-size: 2rem;
+}
+
+.stat-content h3 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #333;
+}
+
+.stat-content p {
+  margin: 5px 0 0 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.section-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin: 20px 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.section-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-top: 15px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.data-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.data-table tr:hover {
+  background: #f8f9fa;
+}
+
+.grade-code {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-weight: 600;
+}
+
+.amount {
+  font-family: monospace;
+  font-weight: 600;
+  color: #28a745;
+}
+
+.employee-count {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 0.8rem;
+}
+
+.btn-outline {
+  background: transparent;
+  color: #007bff;
+  border: 1px solid #007bff;
+}
+
+.btn-outline:hover {
+  background: #007bff;
+  color: white;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #c82333;
+}
+
+.config-grid,
+.data-management-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.config-card,
+.data-card {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.config-icon,
+.data-icon {
+  font-size: 2rem;
+  align-self: flex-start;
+}
+
+.config-content h4,
+.data-content h4 {
+  margin: 0;
+  color: #333;
+}
+
+.config-content p,
+.data-content p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+  flex-grow: 1;
+}
+
+.data-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-warning {
+  background: #ffc107;
+  color: #212529;
+}
+
+.btn-warning:hover {
+  background: #e0a800;
+}
+
+.btn-success {
+  background: #28a745;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #218838;
+}
+
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.quick-action-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s ease;
+}
+
+.quick-action-card:hover {
+  background: #e9ecef;
+  transform: translateY(-2px);
+}
+
+.quick-action-icon {
+  font-size: 1.5rem;
+}
+
+.quick-action-text h4 {
+  margin: 0 0 5px 0;
+  color: #333;
+}
+
+.quick-action-text p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.actions {
+  margin-top: 30px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .config-grid,
+  .data-management-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .data-actions {
+    flex-direction: column;
+  }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}Payslips for Run{% endblock %}
+{% block content %}
+<h1>📋 Payslips</h1>
+
+<div class="card">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+    <div>
+      <p style="margin: 0; font-size: 1.125rem;"><strong>Period:</strong> {{ run.period_start|date:"M d" }} to {{ run.period_end|date:"M d, Y" }}</p>
+      <p style="margin: 0.5rem 0 0 0; color: #64748b;">
+        <strong>Status:</strong> 
+        {% if run.status == 'DRAFT' %}
+          <span class="badge badge-draft">Draft</span>
+        {% elif run.status == 'REVIEW' %}
+          <span class="badge badge-review">Review</span>
+        {% elif run.status == 'APPROVED' %}
+          <span class="badge badge-approved">Approved</span>
+        {% elif run.status == 'PAID' %}
+          <span class="badge badge-paid">Paid</span>
+        {% endif %}
+      </p>
+    </div>
+    
+    <div class="action-buttons" style="margin: 0;">
+      {% if run.status == 'DRAFT' %}
+        <form method="post" action="{% url 'update_payroll_status' run.id %}" style="display: inline;">
+          {% csrf_token %}
+          <input type="hidden" name="status" value="REVIEW">
+          <button type="submit" class="btn btn-primary" data-confirm-action="approve">✓ Move to Review</button>
+        </form>
+      {% elif run.status == 'REVIEW' %}
+        <form method="post" action="{% url 'update_payroll_status' run.id %}" style="display: inline;">
+          {% csrf_token %}
+          <input type="hidden" name="status" value="APPROVED">
+          <button type="submit" class="btn btn-success" data-confirm-action="approve">✓ Approve Payroll</button>
+        </form>
+      {% elif run.status == 'APPROVED' %}
+        <a class="btn btn-primary" href="{% url 'generate_all_pdfs' run.id %}" data-confirm-action="generate-pdfs">📄 Generate PDFs</a>
+        <a class="btn btn-primary" href="{% url 'generate_bank_file' run.id %}" data-confirm-action="generate-bank">🏦 Bank File</a>
+        <a class="btn btn-success" href="{% url 'mark_salaries_deposited' run.id %}" data-confirm-action="mark-paid">💰 Mark as Paid</a>
+      {% endif %}
+      <a class="btn btn-secondary" href="/payroll/runs/">← Back to Runs</a>
+    </div>
+  </div>
+
+  <input 
+    type="text" 
+    class="search-box" 
+    placeholder="🔍 Search by employee name..." 
+    data-table-search="payslips-table"
+  />
+
+  <table id="payslips-table" style="width:100%">
+    <thead>
+      <tr>
+        <th>Employee</th>
+        <th style="text-align: right;">Gross Pay</th>
+        <th style="text-align: right;">SSS</th>
+        <th style="text-align: right;">PhilHealth</th>
+        <th style="text-align: right;">Pag-IBIG</th>
+        <th style="text-align: right;">Tax</th>
+        <th style="text-align: right;">Net Pay</th>
+        <th style="text-align: center;">PDF</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in slips %}
+      <tr>
+        <td><strong>{{ s.employee.last_name }}, {{ s.employee.first_name }}</strong></td>
+        <td style="text-align: right;">₱{{ s.gross_pay|floatformat:2 }}</td>
+        <td style="text-align: right;">₱{{ s.sss|floatformat:2 }}</td>
+        <td style="text-align: right;">₱{{ s.philhealth|floatformat:2 }}</td>
+        <td style="text-align: right;">₱{{ s.pagibig|floatformat:2 }}</td>
+        <td style="text-align: right;">₱{{ s.tax|floatformat:2 }}</td>
+        <td style="text-align: right;"><strong>₱{{ s.net_pay|floatformat:2 }}</strong></td>
+        <td style="text-align: center;">
+          {% if s.pdf_file %}
+            <a href="{{ s.pdf_file.url }}" target="_blank" class="btn btn-sm" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">📄 Download</a>
+          {% else %}
+            <span style="color: #94a3b8; font-size: 0.875rem;">Not generated</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8">
+          <div class="empty-state">
+            <div class="empty-state-icon">📄</div>
+            <p><strong>No payslips generated</strong></p>
+            <p>This may happen if no active employees have attendance records for this period.</p>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    {% if slips %}
+    <tfoot style="background: #f8fafc; font-weight: bold;">
+      <tr>
+        <td>TOTAL ({{ slips|length }} employees)</td>
+        <td style="text-align: right;">₱{{ totals.total_gross|floatformat:2 }}</td>
+        <td style="text-align: right;">₱{{ totals.total_sss|floatformat:2 }}</td>
+        <td style="text-align: right;">₱{{ totals.total_philhealth|floatformat:2 }}</td>
+        <td style="text-align: right;">₱{{ totals.total_pagibig|floatformat:2 }}</td>
+        <td style="text-align: right;">₱{{ totals.total_tax|floatformat:2 }}</td>
+        <td style="text-align: right;">₱{{ totals.total_net|floatformat:2 }}</td>
+        <td></td>
+      </tr>
+    </tfoot>
+    {% endif %}
+  </table>
+</div>
+
+{% if run.status == 'DRAFT' %}
+<div class="card" style="margin-top: 1.5rem; background: #fef3c7; border: 1px solid #fbbf24;">
+  <h3 style="margin-bottom: 0.75rem;">⚠️ Next Steps</h3>
+  <ol style="margin-left: 1.5rem; line-height: 1.8;">
+    <li>Review all payslips for accuracy</li>
+    <li>Check if all employees are included</li>
+    <li>Verify calculations (gross pay, deductions, net pay)</li>
+    <li>Click "Move to Review" when ready</li>
+  </ol>
+</div>
+{% elif run.status == 'APPROVED' %}
+<div class="card" style="margin-top: 1.5rem; background: #d1fae5; border: 1px solid #10b981;">
+  <h3 style="margin-bottom: 0.75rem;">✓ Payroll Approved</h3>
+  <ol style="margin-left: 1.5rem; line-height: 1.8;">
+    <li>Generate PDF payslips for distribution</li>
+    <li>Generate bank file for salary transfer</li>
+    <li>Upload bank file to your bank's portal</li>
+    <li>After bank confirms transfer, click "Mark as Paid"</li>
+  </ol>
+</div>
+{% endif %}
+{% endblock %}

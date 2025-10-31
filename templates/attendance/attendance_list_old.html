@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Attendance Logs{% endblock %}
+{% block content %}
+<h1>Attendance Logs</h1>
+<p><a class="btn" href="/attendance/create/">Add Log</a></p>
+<table class="card" style="width:100%">
+  <tr><th>Date</th><th>Employee</th><th>Time In</th><th>Time Out</th><th>Remarks</th></tr>
+  {% for log in logs %}
+  <tr>
+    <td>{{ log.date }}</td>
+    <td>{{ log.employee }}</td>
+    <td>{{ log.time_in }}</td>
+    <td>{{ log.time_out }}</td>
+    <td>{{ log.remarks }}</td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="5">No records</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

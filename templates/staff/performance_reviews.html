@@ -1,0 +1,511 @@
+{% extends 'base.html' %}
+{% block title %}Performance Reviews | Staff/HR{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+  <h1>Performance Reviews & Employee Management</h1>
+  <p>Track employee performance, tenure, and career development</p>
+</div>
+
+<!-- Performance Overview -->
+<div class="stats-grid">
+  <div class="stat-card total">
+    <div class="stat-icon">👥</div>
+    <div class="stat-content">
+      <h3>{{ employees|length }}</h3>
+      <p>Total Employees</p>
+    </div>
+  </div>
+  
+  <div class="stat-card new">
+    <div class="stat-icon">🆕</div>
+    <div class="stat-content">
+      <h3>
+        {% with new_count=0 %}
+          {% for emp in employees %}
+            {% if emp.tenure_days < 90 %}{{ new_count|add:1 }}{% endif %}
+          {% endfor %}
+        {% endwith %}
+      </h3>
+      <p>New Employees (&lt;3 months)</p>
+    </div>
+  </div>
+  
+  <div class="stat-card experienced">
+    <div class="stat-icon">⭐</div>
+    <div class="stat-content">
+      <h3>
+        {% with exp_count=0 %}
+          {% for emp in employees %}
+            {% if emp.tenure_years >= 2 %}{{ exp_count|add:1 }}{% endif %}
+          {% endfor %}
+        {% endwith %}
+      </h3>
+      <p>Experienced (2+ years)</p>
+    </div>
+  </div>
+  
+  <div class="stat-card senior">
+    <div class="stat-icon">🏆</div>
+    <div class="stat-content">
+      <h3>
+        {% with senior_count=0 %}
+          {% for emp in employees %}
+            {% if emp.tenure_years >= 5 %}{{ senior_count|add:1 }}{% endif %}
+          {% endfor %}
+        {% endwith %}
+      </h3>
+      <p>Senior Staff (5+ years)</p>
+    </div>
+  </div>
+</div>
+
+<!-- Employee Performance Table -->
+<div class="section-card">
+  <div class="section-header">
+    <h3>📊 Employee Performance Overview</h3>
+    <div class="filter-controls">
+      <select class="form-control" id="departmentFilter">
+        <option value="">All Departments</option>
+        {% regroup employees by department as department_list %}
+        {% for department in department_list %}
+          <option value="{{ department.grouper }}">{{ department.grouper }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  
+  {% if employees %}
+    <div class="table-container">
+      <table class="data-table" id="employeeTable">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Department</th>
+            <th>Position</th>
+            <th>Salary Grade</th>
+            <th>Date Hired</th>
+            <th>Tenure</th>
+            <th>Performance Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for employee in employees %}
+          <tr data-department="{{ employee.department }}">
+            <td>
+              <div class="employee-info">
+                <strong>{{ employee.first_name }} {{ employee.last_name }}</strong><br>
+                <small>{{ employee.employee_no }}</small>
+              </div>
+            </td>
+            <td>{{ employee.department }}</td>
+            <td>{{ employee.position }}</td>
+            <td>
+              <span class="salary-grade">{{ employee.salary_grade.code }}-{{ employee.salary_grade.step }}</span>
+            </td>
+            <td>{{ employee.date_hired|date:"M d, Y"|default:"Not specified" }}</td>
+            <td>
+              {% if employee.tenure_days %}
+                <div class="tenure-info">
+                  <span class="tenure-years">{{ employee.tenure_years|floatformat:1 }} years</span>
+                  <div class="tenure-bar">
+                    {% if employee.tenure_years < 1 %}
+                      <div class="tenure-fill new" style="width: {% widthratio employee.tenure_years 1 100 %}%"></div>
+                    {% elif employee.tenure_years < 3 %}
+                      <div class="tenure-fill intermediate" style="width: 100%"></div>
+                    {% else %}
+                      <div class="tenure-fill experienced" style="width: 100%"></div>
+                    {% endif %}
+                  </div>
+                </div>
+              {% else %}
+                <span class="no-data">Not specified</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if employee.tenure_days < 90 %}
+                <span class="status-badge status-new">🆕 New Employee</span>
+              {% elif employee.tenure_days < 365 %}
+                <span class="status-badge status-probation">⏳ Probationary</span>
+              {% elif employee.tenure_years < 2 %}
+                <span class="status-badge status-regular">✅ Regular</span>
+              {% elif employee.tenure_years < 5 %}
+                <span class="status-badge status-experienced">⭐ Experienced</span>
+              {% else %}
+                <span class="status-badge status-senior">🏆 Senior</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="action-buttons">
+                <a href="/employees/{{ employee.id }}/edit/" class="btn btn-sm btn-outline">📝 Edit</a>
+                <a href="/staff/performance/{{ employee.id }}/review/" class="btn btn-sm btn-primary">📊 Review</a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p>No employees found.</p>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Performance Insights -->
+<div class="section-card">
+  <h3>💡 Performance Insights</h3>
+  <div class="insights-grid">
+    <div class="insight-card">
+      <div class="insight-icon">📈</div>
+      <div class="insight-content">
+        <h4>Career Development</h4>
+        <p>Track employee growth and identify promotion opportunities based on tenure and performance.</p>
+        <a href="/staff/career-development/" class="btn btn-sm btn-outline">View Details</a>
+      </div>
+    </div>
+    
+    <div class="insight-card">
+      <div class="insight-icon">🎯</div>
+      <div class="insight-content">
+        <h4>Training Needs</h4>
+        <p>Identify skill gaps and training requirements for employee development programs.</p>
+        <a href="/staff/training-needs/" class="btn btn-sm btn-outline">Assess Needs</a>
+      </div>
+    </div>
+    
+    <div class="insight-card">
+      <div class="insight-icon">⚠️</div>
+      <div class="insight-content">
+        <h4>Retention Risk</h4>
+        <p>Monitor employee satisfaction and identify potential retention issues early.</p>
+        <a href="/staff/retention-analysis/" class="btn btn-sm btn-outline">Analyze Risk</a>
+      </div>
+    </div>
+    
+    <div class="insight-card">
+      <div class="insight-icon">🏅</div>
+      <div class="insight-content">
+        <h4>Recognition Program</h4>
+        <p>Implement employee recognition and reward programs to boost morale and performance.</p>
+        <a href="/staff/recognition/" class="btn btn-sm btn-outline">Manage Program</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="actions">
+  <a href="/employees/" class="btn btn-primary">👥 Manage All Employees</a>
+  <a href="/reports/" class="btn btn-outline">📊 Generate Reports</a>
+  <a href="/staff/" class="btn btn-secondary">🏠 Back to Staff Dashboard</a>
+</div>
+
+<style>
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border-left: 4px solid;
+}
+
+.stat-card.total {
+  border-left-color: #007bff;
+}
+
+.stat-card.new {
+  border-left-color: #28a745;
+}
+
+.stat-card.experienced {
+  border-left-color: #ffc107;
+}
+
+.stat-card.senior {
+  border-left-color: #dc3545;
+}
+
+.stat-icon {
+  font-size: 2rem;
+}
+
+.stat-content h3 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #333;
+}
+
+.stat-content p {
+  margin: 5px 0 0 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.section-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin: 20px 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.section-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.filter-controls select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-top: 15px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.data-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.data-table tr:hover {
+  background: #f8f9fa;
+}
+
+.employee-info strong {
+  color: #333;
+}
+
+.salary-grade {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.tenure-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tenure-years {
+  font-weight: 600;
+  color: #333;
+}
+
+.tenure-bar {
+  width: 60px;
+  height: 6px;
+  background: #e9ecef;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.tenure-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.tenure-fill.new {
+  background: #28a745;
+}
+
+.tenure-fill.intermediate {
+  background: #ffc107;
+}
+
+.tenure-fill.experienced {
+  background: #dc3545;
+}
+
+.no-data {
+  color: #999;
+  font-style: italic;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.status-new {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-probation {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-regular {
+  background: #cce7ff;
+  color: #004085;
+}
+
+.status-experienced {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.status-senior {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 0.8rem;
+}
+
+.btn-outline {
+  background: transparent;
+  color: #007bff;
+  border: 1px solid #007bff;
+}
+
+.btn-outline:hover {
+  background: #007bff;
+  color: white;
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.insight-card {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.insight-icon {
+  font-size: 2rem;
+  align-self: flex-start;
+}
+
+.insight-content h4 {
+  margin: 0;
+  color: #333;
+}
+
+.insight-content p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+  flex-grow: 1;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.actions {
+  margin-top: 30px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .insights-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+}
+</style>
+
+<script>
+// Department filter functionality
+document.getElementById('departmentFilter').addEventListener('change', function() {
+  const selectedDepartment = this.value;
+  const rows = document.querySelectorAll('#employeeTable tbody tr');
+  
+  rows.forEach(row => {
+    const department = row.getAttribute('data-department');
+    if (selectedDepartment === '' || department === selectedDepartment) {
+      row.style.display = '';
+    } else {
+      row.style.display = 'none';
+    }
+  });
+});
+</script>
+{% endblock %}

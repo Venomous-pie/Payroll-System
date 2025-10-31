@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Access Denied | PMS{% endblock %}
+{% block content %}
+<div class="card" style="max-width:600px;margin:40px auto; text-align: center;">
+  <h2 style="color: #dc3545;">🚫 Access Denied</h2>
+  
+  <div style="margin: 20px 0; padding: 20px; background: #f8d7da; border-radius: 8px; color: #721c24;">
+    <p><strong>You don't have permission to access this resource.</strong></p>
+    
+    <div style="margin: 15px 0;">
+      <p><strong>Required Role:</strong> {{ required_role }}</p>
+      {% if user_roles %}
+        <p><strong>Your Roles:</strong> {{ user_roles|join:", " }}</p>
+      {% else %}
+        <p><strong>Your Roles:</strong> No roles assigned</p>
+      {% endif %}
+    </div>
+  </div>
+  
+  <div style="margin-top: 20px;">
+    <p>Please contact your administrator if you believe you should have access to this resource.</p>
+    
+    <div style="margin-top: 20px;">
+      <a href="/" class="btn" style="background: #007bff; color: white; text-decoration: none; padding: 10px 20px; border-radius: 4px; margin: 5px;">
+        🏠 Go to Dashboard
+      </a>
+      <a href="/accounts/profile/" class="btn" style="background: #6c757d; color: white; text-decoration: none; padding: 10px 20px; border-radius: 4px; margin: 5px;">
+        👤 View Profile
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

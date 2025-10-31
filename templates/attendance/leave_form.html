@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+  <h1>{{ title }}</h1>
+  <p>Request time off for vacation, sick leave, or personal matters</p>
+</div>
+
+{% if error %}
+  <div class="error-state">
+    <h3>❌ Unable to Submit Leave Request</h3>
+    <p>{{ error }}</p>
+    <a href="/employee/" class="btn btn-secondary">🏠 Back to Dashboard</a>
+  </div>
+{% else %}
+  <div class="form-container">
+    <form method="post" class="leave-form">
+      {% csrf_token %}
+      
+      {% if form.errors %}
+        <div class="alert alert-error">
+          {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+              <p>{{ error }}</p>
+            {% endfor %}
+          {% endfor %}
+        </div>
+      {% endif %}
+      
+      <div class="form-group">
+        <label for="{{ form.leave_type.id_for_label }}">Leave Type:</label>
+        {{ form.leave_type }}
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="{{ form.start_date.id_for_label }}">Start Date:</label>
+          {{ form.start_date }}
+        </div>
+        <div class="form-group">
+          <label for="{{ form.end_date.id_for_label }}">End Date:</label>
+          {{ form.end_date }}
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="{{ form.reason.id_for_label }}">Reason (Optional):</label>
+        {{ form.reason }}
+      </div>
+      
+      <div class="form-actions">
+        <button class="btn btn-primary" type="submit">🏖️ Submit Leave Request</button>
+        <a class="btn btn-secondary" href="/employee/">Cancel</a>
+      </div>
+    </form>
+  </div>
+{% endif %}
+
+<style>
+.form-container {
+  max-width: 600px;
+  margin: 20px auto;
+}
+
+.leave-form {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.form-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+
+.error-state {
+  text-align: center;
+  padding: 40px;
+  background: white;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+}
+</style>
+{% endblock %}

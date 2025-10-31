@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}My Payslips{% endblock %}
+{% block content %}
+<h1>My Payslips</h1>
+<table class="card" style="width:100%">
+  <tr><th>Period</th><th>Gross</th><th>Net</th><th></th></tr>
+  {% for s in slips %}
+  <tr>
+    <td>{{ s.payroll_run.period_start }} to {{ s.payroll_run.period_end }}</td>
+    <td>{{ s.gross_pay }}</td>
+    <td>{{ s.net_pay }}</td>
+    <td><a href="/payroll/my/payslips/{{ s.id }}/">View</a></td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="4">No payslips yet</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

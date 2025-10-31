@@ -1,0 +1,361 @@
+{% extends 'base.html' %}
+{% block title %}Deposit Status | Staff/HR{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+  <h1>Employee Deposit Status</h1>
+  <p>Track salary deposits and bank transfer status for all employees</p>
+</div>
+
+<!-- Deposit Summary -->
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="summary-icon">👥</div>
+    <div class="summary-content">
+      <h3>{{ employees_with_deposits|length }}</h3>
+      <p>Total Employees</p>
+    </div>
+  </div>
+  
+  <div class="summary-card">
+    <div class="summary-icon">✅</div>
+    <div class="summary-content">
+      <h3>
+        {% with deposited=0 %}
+          {% for emp in employees_with_deposits %}
+            {% if emp.payslip_set.last.salary_deposited %}{{ deposited|add:1 }}{% endif %}
+          {% endfor %}
+        {% endwith %}
+      </h3>
+      <p>Latest Deposits Complete</p>
+    </div>
+  </div>
+  
+  <div class="summary-card">
+    <div class="summary-icon">⏳</div>
+    <div class="summary-content">
+      <h3>
+        {% with pending=0 %}
+          {% for emp in employees_with_deposits %}
+            {% if not emp.payslip_set.last.salary_deposited %}{{ pending|add:1 }}{% endif %}
+          {% endfor %}
+        {% endwith %}
+      </h3>
+      <p>Pending Deposits</p>
+    </div>
+  </div>
+</div>
+
+<!-- Employee Deposit Status -->
+<div class="section-card">
+  <h3>💳 Employee Deposit Status</h3>
+  {% if employees_with_deposits %}
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Department</th>
+            <th>Bank Information</th>
+            <th>Latest Payroll</th>
+            <th>Net Amount</th>
+            <th>Bank File</th>
+            <th>Deposit Status</th>
+            <th>Deposit Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for employee in employees_with_deposits %}
+          {% with latest_payslip=employee.payslip_set.last %}
+          <tr>
+            <td>
+              <strong>{{ employee.first_name }} {{ employee.last_name }}</strong><br>
+              <small>{{ employee.employee_no }}</small>
+            </td>
+            <td>{{ employee.department }}</td>
+            <td>
+              {% if employee.bank_name and employee.bank_account %}
+                <strong>{{ employee.bank_name }}</strong><br>
+                <small>****{{ employee.bank_account|slice:"-4:" }}</small>
+              {% else %}
+                <span class="no-bank">❌ No bank info</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if latest_payslip %}
+                {{ latest_payslip.payroll_run.period_start|date:"M d" }} - {{ latest_payslip.payroll_run.period_end|date:"M d, Y" }}
+              {% else %}
+                <span class="no-payroll">No payroll</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if latest_payslip %}
+                <span class="amount">₱{{ latest_payslip.net_pay|floatformat:2 }}</span>
+              {% else %}
+                <span class="no-amount">-</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if latest_payslip %}
+                {% if latest_payslip.bank_file_generated %}
+                  <span class="status-badge status-success">✓ Generated</span>
+                {% else %}
+                  <span class="status-badge status-pending">⏳ Pending</span>
+                {% endif %}
+              {% else %}
+                <span class="status-badge status-none">-</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if latest_payslip %}
+                {% if latest_payslip.salary_deposited %}
+                  <span class="status-badge status-success">✅ Deposited</span>
+                {% elif latest_payslip.bank_file_sent %}
+                  <span class="status-badge status-processing">🔄 Processing</span>
+                {% elif latest_payslip.bank_file_generated %}
+                  <span class="status-badge status-ready">📄 File Ready</span>
+                {% else %}
+                  <span class="status-badge status-pending">⏳ Pending</span>
+                {% endif %}
+              {% else %}
+                <span class="status-badge status-none">-</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if latest_payslip and latest_payslip.deposit_date %}
+                {{ latest_payslip.deposit_date|date:"M d, Y" }}
+              {% else %}
+                <span class="no-date">Not deposited</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="action-buttons">
+                {% if not employee.bank_name or not employee.bank_account %}
+                  <a href="/employees/{{ employee.id }}/edit/" class="btn btn-sm btn-warning">Update Bank</a>
+                {% elif latest_payslip and not latest_payslip.salary_deposited %}
+                  {% if latest_payslip.bank_file_generated %}
+                    <a href="/payroll/runs/{{ latest_payslip.payroll_run.id }}/mark-deposited/" class="btn btn-sm btn-success">Mark Deposited</a>
+                  {% else %}
+                    <a href="/payroll/runs/{{ latest_payslip.payroll_run.id }}/generate-bank-file/" class="btn btn-sm btn-primary">Generate File</a>
+                  {% endif %}
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endwith %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p>No employee records found.</p>
+    </div>
+  {% endif %}
+</div>
+
+<div class="actions">
+  <a href="/staff/bank-transfers/" class="btn btn-primary">🏦 Manage Bank Transfers</a>
+  <a href="/employees/" class="btn btn-outline">👥 Manage Employees</a>
+  <a href="/staff/" class="btn btn-secondary">🏠 Back to Staff Dashboard</a>
+</div>
+
+<style>
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.summary-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.summary-icon {
+  font-size: 2rem;
+}
+
+.summary-content h3 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #333;
+}
+
+.summary-content p {
+  margin: 5px 0 0 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.section-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin: 20px 0;
+}
+
+.section-card h3 {
+  margin-bottom: 15px;
+  color: #333;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 10px;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-top: 15px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.data-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.data-table tr:hover {
+  background: #f8f9fa;
+}
+
+.amount {
+  font-family: monospace;
+  font-weight: 600;
+  color: #28a745;
+}
+
+.no-bank,
+.no-payroll,
+.no-amount,
+.no-date {
+  color: #999;
+  font-style: italic;
+}
+
+.no-bank {
+  color: #dc3545;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.status-success {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-processing {
+  background: #cce7ff;
+  color: #004085;
+}
+
+.status-ready {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-pending {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.status-none {
+  background: #e9ecef;
+  color: #6c757d;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 0.8rem;
+}
+
+.btn-warning {
+  background: #ffc107;
+  color: #212529;
+}
+
+.btn-warning:hover {
+  background: #e0a800;
+}
+
+.btn-success {
+  background: #28a745;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #218838;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.actions {
+  margin-top: 30px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-outline {
+  background: transparent;
+  color: #28a745;
+  border: 1px solid #28a745;
+}
+
+.btn-outline:hover {
+  background: #28a745;
+  color: white;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+
+@media (max-width: 768px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+}
+</style>
+{% endblock %}

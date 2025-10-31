@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<h1>{{ title }}</h1>
+
+<div class="card">
+  <form method="post" data-validate>
+    {% csrf_token %}
+    
+    {% if form.errors %}
+      <div class="alert alert-error" style="margin-bottom: 1.5rem;">
+        <span class="alert-icon">✗</span>
+        <div>
+          <strong>Please correct the following errors:</strong>
+          <ul style="margin: 0.5rem 0 0 1.5rem;">
+            {% for field, errors in form.errors.items %}
+              {% for error in errors %}
+                <li>{{ field|title }}: {{ error }}</li>
+              {% endfor %}
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    {% endif %}
+
+    <h3 style="margin-bottom: 1rem; color: #475569;">Basic Information</h3>
+    
+    <div class="form-row">
+      <div class="form-group">
+        <label for="{{ form.employee_no.id_for_label }}">
+          Employee Number <span class="required-indicator">*</span>
+          <span class="tooltip" data-tooltip="Unique identifier for the employee">ℹ️</span>
+        </label>
+        {{ form.employee_no }}
+        <span class="help-text">Example: EMP001, EMP002</span>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="{{ form.first_name.id_for_label }}">
+          First Name <span class="required-indicator">*</span>
+        </label>
+        {{ form.first_name }}
+      </div>
+      
+      <div class="form-group">
+        <label for="{{ form.last_name.id_for_label }}">
+          Last Name <span class="required-indicator">*</span>
+        </label>
+        {{ form.last_name }}
+      </div>
+    </div>
+
+    <h3 style="margin: 2rem 0 1rem; color: #475569;">Employment Details</h3>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="{{ form.department.id_for_label }}">
+          Department <span class="required-indicator">*</span>
+        </label>
+        {{ form.department }}
+        <span class="help-text">Example: Accounting, HR, IT</span>
+      </div>
+      
+      <div class="form-group">
+        <label for="{{ form.position.id_for_label }}">
+          Position <span class="required-indicator">*</span>
+        </label>
+        {{ form.position }}
+        <span class="help-text">Example: Accountant, Manager</span>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="{{ form.salary_grade.id_for_label }}">
+          Salary Grade <span class="required-indicator">*</span>
+          <span class="tooltip" data-tooltip="Determines the employee's salary and benefits">ℹ️</span>
+        </label>
+        {{ form.salary_grade }}
+        <span class="help-text">Select from predefined salary grades</span>
+      </div>
+      
+      <div class="form-group">
+        <label for="{{ form.date_hired.id_for_label }}">
+          Date Hired
+        </label>
+        {{ form.date_hired }}
+        <span class="help-text">Format: YYYY-MM-DD</span>
+      </div>
+    </div>
+
+    <h3 style="margin: 2rem 0 1rem; color: #475569;">Bank Information</h3>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="{{ form.bank_name.id_for_label }}">
+          Bank Name
+          <span class="tooltip" data-tooltip="Bank where salary will be deposited">ℹ️</span>
+        </label>
+        {{ form.bank_name }}
+        <span class="help-text">Example: BDO, BPI, Metrobank</span>
+      </div>
+      
+      <div class="form-group">
+        <label for="{{ form.bank_account.id_for_label }}">
+          Bank Account Number
+        </label>
+        {{ form.bank_account }}
+        <span class="help-text">Employee's account number</span>
+      </div>
+    </div>
+
+    {% if form.active %}
+    <div class="form-group">
+      <label style="display: flex; align-items: center; cursor: pointer;">
+        {{ form.active }}
+        <span style="margin-left: 0.5rem;">Active Employee</span>
+        <span class="tooltip" data-tooltip="Inactive employees won't be included in payroll">ℹ️</span>
+      </label>
+      <span class="help-text">Uncheck to mark employee as inactive</span>
+    </div>
+    {% endif %}
+
+    <div style="background: #f0f9ff; border: 1px solid #0ea5e9; padding: 1rem; border-radius: 6px; margin: 1.5rem 0;">
+      <strong>💡 Important:</strong>
+      <ul style="margin: 0.5rem 0 0 1.5rem; line-height: 1.8;">
+        <li>All fields marked with <span class="required-indicator">*</span> are required</li>
+        <li>Employee number must be unique</li>
+        <li>Salary grade must be assigned for payroll processing</li>
+        <li>Bank details are needed for salary deposits</li>
+      </ul>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" type="submit">💾 Save Employee</button>
+      <a class="btn btn-secondary" href="/employees/">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

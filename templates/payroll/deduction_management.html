@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deduction Management - Payroll Management System</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  {% include 'partials/sidebar.html' %}
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <div>
+        <h1 style="margin: 0; font-size: 1.75rem; color: #1e293b;">📝 Deduction Management</h1>
+        <p style="margin: 0.5rem 0 0 0; color: #64748b;">Manage employee deductions and other payroll adjustments</p>
+      </div>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <a href="/payroll/loans/create/" class="btn-secondary">
+          <span>💳</span>
+          <span>Add Loan</span>
+        </a>
+        <a href="/payroll/deductions/create/" class="btn-primary">
+          <span>➕</span>
+          <span>Add Deduction</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Stats Row -->
+    <div class="stats-grid" style="margin-bottom: 2rem;">
+      <div class="stat-card-mini">
+        <div class="stat-mini-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">📋</div>
+        <div>
+          <div class="stat-mini-label">Total Deductions</div>
+          <div class="stat-mini-value">{{ total_deductions|default:"0" }}</div>
+        </div>
+      </div>
+      <div class="stat-card-mini">
+        <div class="stat-mini-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">✅</div>
+        <div>
+          <div class="stat-mini-label">Active</div>
+          <div class="stat-mini-value">{{ active_deductions|default:"0" }}</div>
+        </div>
+      </div>
+      <div class="stat-card-mini">
+        <div class="stat-mini-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">💰</div>
+        <div>
+          <div class="stat-mini-label">Monthly Amount</div>
+          <div class="stat-mini-value">₱{{ total_amount|floatformat:0|default:"0" }}</div>
+        </div>
+      </div>
+      <div class="stat-card-mini">
+        <div class="stat-mini-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">💳</div>
+        <div>
+          <div class="stat-mini-label">Loan Deductions</div>
+          <div class="stat-mini-value">{{ loan_deductions|default:"0" }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deductions Table -->
+    <div class="widget">
+      <div class="widget-header" style="margin-bottom: 1.5rem;">
+        <h3>All Deductions</h3>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+          <input 
+            type="text" 
+            class="search-input" 
+            placeholder="🔍 Search deductions..." 
+            data-table-search="deductions-table"
+          />
+        </div>
+      </div>
+
+      {% if deductions %}
+      <div class="table-container">
+        <table id="deductions-table" class="modern-table">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Type</th>
+              <th>Description</th>
+              <th style="text-align: right;">Amount</th>
+              <th>Created Date</th>
+              <th style="width: 100px; text-align: center;">Status</th>
+              <th style="width: 120px; text-align: center;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for deduction in deductions %}
+            <tr class="table-row-hover">
+              <td>
+                <div class="employee-info">
+                  <div class="employee-avatar-sm">{{ deduction.employee.first_name|slice:":1" }}{{ deduction.employee.last_name|slice:":1" }}</div>
+                  <div>
+                    <div class="employee-name-sm">{{ deduction.employee.last_name }}, {{ deduction.employee.first_name }}</div>
+                    <div class="employee-no-sm">{{ deduction.employee.employee_no }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                {% if deduction.loan %}
+                  <span class="deduction-type-badge loan">
+                    <span>💳</span>
+                    <span>Loan Payment</span>
+                  </span>
+                {% else %}
+                  <span class="deduction-type-badge other">
+                    <span>📋</span>
+                    <span>Other Deduction</span>
+                  </span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="description-text">{{ deduction.description|truncatewords:10 }}</div>
+              </td>
+              <td style="text-align: right;">
+                <div class="amount-text">₱{{ deduction.amount|floatformat:2 }}</div>
+              </td>
+              <td>
+                <div class="date-text">{{ deduction.created_at|date:"M d, Y" }}</div>
+              </td>
+              <td style="text-align: center;">
+                {% if deduction.is_active %}
+                  <span class="badge badge-active">Active</span>
+                {% else %}
+                  <span class="badge badge-inactive">Inactive</span>
+                {% endif %}
+              </td>
+              <td style="text-align: center;">
+                <span style="color: #94a3b8; font-size: 0.875rem;">Auto-managed</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        <div class="table-info">
+          Showing <strong>{{ deductions|length }}</strong> deductions
+        </div>
+        <div class="table-actions">
+          <button class="btn-text">Export CSV</button>
+          <button class="btn-text">Print</button>
+        </div>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">📋</div>
+        <p><strong>No Deductions Found</strong></p>
+        <p>No deductions are currently in the system.</p>
+        <a href="/payroll/deductions/create/" class="btn-primary" style="margin-top: 1rem;">
+          <span>➕</span>
+          <span>Add First Deduction</span>
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Loan Summary -->
+    {% if loans %}
+    <div class="widget" style="margin-top: 2rem;">
+      <h3 style="margin-bottom: 1.5rem;">💳 Active Loans Summary</h3>
+      <div class="loans-grid">
+        {% for loan in loans|slice:":6" %}
+        <div class="loan-summary-card">
+          <div class="loan-summary-header">
+            <div class="employee-avatar-sm">{{ loan.employee.first_name|slice:":1" }}{{ loan.employee.last_name|slice:":1" }}</div>
+            <div style="flex: 1;">
+              <div class="loan-employee-name">{{ loan.employee.last_name }}, {{ loan.employee.first_name }}</div>
+              <div class="loan-type-label">{{ loan.get_loan_type_display }}</div>
+            </div>
+          </div>
+          <div class="loan-summary-details">
+            <div class="loan-detail-item">
+              <span class="detail-label">Principal:</span>
+              <span class="detail-value">₱{{ loan.principal_amount|floatformat:2 }}</span>
+            </div>
+            <div class="loan-detail-item">
+              <span class="detail-label">Remaining:</span>
+              <span class="detail-value remaining">₱{{ loan.remaining_balance|floatformat:2 }}</span>
+            </div>
+            <div class="loan-detail-item">
+              <span class="detail-label">Monthly:</span>
+              <span class="detail-value monthly">₱{{ loan.monthly_deduction|floatformat:2 }}</span>
+            </div>
+          </div>
+          <div class="loan-progress-container">
+            {% widthratio loan.principal_amount loan.principal_amount 100 as total %}
+            {% widthratio loan.remaining_balance loan.principal_amount 100 as remaining_pct %}
+            {% widthratio total|add:"-"|add:remaining_pct 1 1 as paid_pct %}
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: {{ paid_pct }}%"></div>
+            </div>
+            <small class="progress-text">{{ paid_pct }}% paid</small>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div style="text-align: center; margin-top: 1.5rem;">
+        <a href="/payroll/loans/" class="btn-secondary">
+          <span>💳</span>
+          <span>View All Loans</span>
+        </a>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-card" style="margin-top: 2rem;">
+      <h3 style="margin-bottom: 1rem;">⚡ Quick Actions</h3>
+      <div class="quick-actions-grid">
+        <a href="/staff/benefits/" class="quick-action-item">
+          <div class="quick-action-icon">🎯</div>
+          <div>
+            <div class="quick-action-title">Benefits Management</div>
+            <div class="quick-action-desc">Manage employee benefits</div>
+          </div>
+        </a>
+        <a href="/reports/" class="quick-action-item">
+          <div class="quick-action-icon">📊</div>
+          <div>
+            <div class="quick-action-title">Generate Reports</div>
+            <div class="quick-action-desc">View deduction reports</div>
+          </div>
+        </a>
+        <a href="/payroll/runs/" class="quick-action-item">
+          <div class="quick-action-icon">💰</div>
+          <div>
+            <div class="quick-action-title">Payroll Runs</div>
+            <div class="quick-action-desc">Process payroll</div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Quick Tips -->
+    <div class="info-card" style="margin-top: 1.5rem;">
+      <div class="info-icon">💡</div>
+      <div>
+        <strong>Quick Tips:</strong> Deductions are automatically applied during payroll processing. Inactive deductions won't be included. Monitor loan deductions to ensure timely payments.
+      </div>
+    </div>
+  </main>
+</div>
+
+<style>
+  /* Dashboard Layout */
+  .dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f8fafc;
+  }
+
+  .main-content {
+    margin-left: 280px;
+    flex: 1;
+    padding: 2rem;
+  }
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .btn-primary, .btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn-secondary {
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+  }
+
+  .btn-secondary:hover {
+    background: #f8fafc;
+  }
+
+  /* Mini Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  .stat-card-mini {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+  }
+
+  .stat-card-mini:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .stat-mini-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .stat-mini-label {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-mini-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1e293b;
+  }
+
+  /* Widget */
+  .widget {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .widget h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .search-input {
+    padding: 0.5rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    width: 300px;
+    transition: all 0.3s;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  /* Modern Table */
+  .table-container {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+  }
+
+  .modern-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .modern-table thead {
+    background: #f8fafc;
+  }
+
+  .modern-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  .modern-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .table-row-hover {
+    transition: all 0.2s;
+  }
+
+  .table-row-hover:hover {
+    background: #f8fafc;
+  }
+
+  /* Employee Info */
+  .employee-info {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+
+  .employee-avatar-sm {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .employee-name-sm {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.9rem;
+  }
+
+  .employee-no-sm {
+    font-size: 0.75rem;
+    color: #94a3b8;
+  }
+
+  /* Deduction Type Badge */
+  .deduction-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .deduction-type-badge.loan {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .deduction-type-badge.other {
+    background: #f3e8ff;
+    color: #7c3aed;
+  }
+
+  /* Text Styles */
+  .description-text {
+    color: #475569;
+    font-size: 0.9rem;
+  }
+
+  .amount-text {
+    font-weight: 700;
+    color: #059669;
+    font-size: 0.95rem;
+  }
+
+  .date-text {
+    color: #64748b;
+    font-size: 0.875rem;
+  }
+
+  /* Badges */
+  .badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+  }
+
+  .badge-active {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .badge-inactive {
+    background: #f1f5f9;
+    color: #64748b;
+  }
+
+  /* Action Buttons */
+  .action-buttons-inline {
+    display: flex;
+    gap: 0.375rem;
+    justify-content: center;
+  }
+
+  .btn-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: #f1f5f9;
+    text-decoration: none;
+    transition: all 0.2s;
+    font-size: 1rem;
+  }
+
+  .btn-icon:hover {
+    background: #e2e8f0;
+    transform: scale(1.1);
+  }
+
+  .btn-icon-warning {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .btn-icon-warning:hover {
+    background: #fde68a;
+  }
+
+  .btn-icon-success {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .btn-icon-success:hover {
+    background: #bbf7d0;
+  }
+
+  /* Loans Grid */
+  .loans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+
+  .loan-summary-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.25rem;
+    border-left: 4px solid #667eea;
+    transition: all 0.2s;
+  }
+
+  .loan-summary-card:hover {
+    background: #f1f5f9;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .loan-summary-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .loan-employee-name {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.95rem;
+  }
+
+  .loan-type-label {
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
+  .loan-summary-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .loan-detail-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+  }
+
+  .detail-label {
+    color: #64748b;
+  }
+
+  .detail-value {
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .detail-value.remaining {
+    color: #dc2626;
+  }
+
+  .detail-value.monthly {
+    color: #059669;
+  }
+
+  /* Progress Bar */
+  .loan-progress-container {
+    margin-top: 0.75rem;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #34d399);
+    transition: width 0.3s ease;
+  }
+
+  .progress-text {
+    font-size: 0.75rem;
+    color: #64748b;
+  }
+
+  /* Quick Actions */
+  .quick-actions-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .quick-actions-card h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+
+  .quick-action-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .quick-action-item:hover {
+    background: #f1f5f9;
+    border-color: #667eea;
+    transform: translateY(-2px);
+  }
+
+  .quick-action-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .quick-action-title {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+  }
+
+  .quick-action-desc {
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
+  /* Table Footer */
+  .table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .table-info {
+    color: #64748b;
+    font-size: 0.875rem;
+  }
+
+  .table-actions {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .btn-text {
+    background: none;
+    border: none;
+    color: #667eea;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  .btn-text:hover {
+    background: #f1f5f9;
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+
+  .empty-state-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  .empty-state p {
+    color: #64748b;
+    margin: 0.5rem 0;
+  }
+
+  /* Info Card */
+  .info-card {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .info-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .info-card strong {
+    color: #1e40af;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .main-content {
+      margin-left: 0;
+      padding: 1rem;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .search-input {
+      width: 100%;
+    }
+
+    .loans-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .quick-actions-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>

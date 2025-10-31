@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }} - Payroll Management System</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  {% include 'partials/sidebar.html' %}
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <div>
+        <h1 style="margin: 0; font-size: 1.75rem; color: #1e293b;">{{ title }}</h1>
+        <p style="margin: 0.5rem 0 0 0; color: #64748b;">Fill in the employee information below</p>
+      </div>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <a href="/employees/" class="btn-secondary">
+          <span>←</span>
+          <span>Back to List</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Form Container -->
+    <div class="form-container">
+      <form method="post" data-validate>
+        {% csrf_token %}
+        
+        {% if form.errors %}
+          <div class="alert alert-error">
+            <div class="alert-icon">⚠️</div>
+            <div class="alert-content">
+              <strong>Please correct the following errors:</strong>
+              <ul>
+                {% for field, errors in form.errors.items %}
+                  {% for error in errors %}
+                    <li>{{ field|title }}: {{ error }}</li>
+                  {% endfor %}
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- Section 1: Basic Information -->
+        <div class="form-section">
+          <div class="section-header">
+            <div class="section-icon">👤</div>
+            <div>
+              <h3>Basic Information</h3>
+              <p>Employee's personal details</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-field full-width">
+              <label for="{{ form.employee_no.id_for_label }}">
+                Employee Number <span class="required">*</span>
+                <span class="tooltip" title="Unique identifier for the employee">ℹ️</span>
+              </label>
+              {{ form.employee_no }}
+              <span class="field-hint">Example: EMP001, EMP002</span>
+            </div>
+
+            <div class="form-field">
+              <label for="{{ form.first_name.id_for_label }}">
+                First Name <span class="required">*</span>
+              </label>
+              {{ form.first_name }}
+            </div>
+
+            <div class="form-field">
+              <label for="{{ form.last_name.id_for_label }}">
+                Last Name <span class="required">*</span>
+              </label>
+              {{ form.last_name }}
+            </div>
+
+            <div class="form-field">
+              <label for="{{ form.username.id_for_label }}">
+                Username <span class="required">*</span>
+                <span class="tooltip" title="Username for system login">ℹ️</span>
+              </label>
+              {{ form.username }}
+              <span class="field-hint">Unique username for login</span>
+            </div>
+
+            <div class="form-field">
+              <label for="{{ form.email.id_for_label }}">
+                Email Address <span class="required">*</span>
+              </label>
+              {{ form.email }}
+              <span class="field-hint">For system notifications</span>
+            </div>
+
+            <div class="form-field">
+              <label for="{{ form.password.id_for_label }}">
+                Password <span class="required">*</span>
+                <span class="tooltip" title="Initial password for the account">ℹ️</span>
+              </label>
+              {{ form.password }}
+              <span class="field-hint">Initial login password</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Employment Details -->
+        <div class="form-section">
+          <div class="section-header">
+            <div class="section-icon">💼</div>
+            <div>
+              <h3>Employment Details</h3>
+              <p>Job position and department information</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="{{ form.department.id_for_label }}">
+                Department <span class="required">*</span>
+              </label>
+              <select name="department" id="{{ form.department.id_for_label }}" required>
+                <option value="">-- Select Department --</option>
+                <option value="Accounting">Accounting</option>
+                <option value="HR">HR (Human Resources)</option>
+                <option value="IT">IT (Information Technology)</option>
+                <option value="Sales">Sales</option>
+                <option value="Operations">Operations</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Finance">Finance</option>
+                <option value="Admin">Admin (Administration)</option>
+              </select>
+              <span class="field-hint">📂 Choose the department where this employee will work</span>
+            </div>
+
+            <div class="form-field">
+              <label for="{{ form.position.id_for_label }}">
+                Job Position <span class="required">*</span>
+              </label>
+              <select name="position" id="{{ form.position.id_for_label }}" required>
+                <option value="">-- Select Position --</option>
+                <option value="Staff">Staff</option>
+                <option value="Senior Staff">Senior Staff</option>
+                <option value="Supervisor">Supervisor</option>
+                <option value="Manager">Manager</option>
+                <option value="Senior Manager">Senior Manager</option>
+                <option value="Specialist">Specialist</option>
+                <option value="Assistant">Assistant</option>
+                <option value="Officer">Officer</option>
+              </select>
+              <span class="field-hint">💼 Choose the employee's job title/role</span>
+            </div>
+
+            <div class="form-field">
+              <label for="{{ form.date_hired.id_for_label }}">
+                Date Hired
+              </label>
+              {{ form.date_hired }}
+              <span class="field-hint">Select when the employee started</span>
+            </div>
+
+            <div class="form-field">
+              <label for="{{ form.active.id_for_label }}" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                {{ form.active }}
+                <span>Active Employee</span>
+                <span class="tooltip" title="Inactive employees won't be included in payroll">ℹ️</span>
+              </label>
+              <span class="field-hint">Uncheck to mark as inactive</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Salary Information -->
+        <div class="form-section">
+          <div class="section-header">
+            <div class="section-icon">💰</div>
+            <div>
+              <h3>Salary Information</h3>
+              <p>Compensation and grade details</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-field full-width">
+              <label for="{{ form.salary_grade.id_for_label }}">
+                Salary Grade <span class="required">*</span>
+                <span class="tooltip" title="Determines the employee's salary and benefits">ℹ️</span>
+              </label>
+              {{ form.salary_grade }}
+              <span class="field-hint">Select from predefined salary grades</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Bank Information -->
+        <div class="form-section">
+          <div class="section-header">
+            <div class="section-icon">🏦</div>
+            <div>
+              <h3>Bank Information</h3>
+              <p>Salary deposit account details</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="{{ form.bank_name.id_for_label }}">
+                Bank Name
+                <span class="tooltip" title="Bank where salary will be deposited">ℹ️</span>
+              </label>
+              {{ form.bank_name }}
+              <span class="field-hint">Example: BDO, BPI, Metrobank</span>
+            </div>
+
+            <div class="form-field">
+              <label for="{{ form.bank_account.id_for_label }}">
+                Bank Account Number
+              </label>
+              {{ form.bank_account }}
+              <span class="field-hint">Employee's account number</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="info-card">
+          <div class="info-icon">💡</div>
+          <div>
+            <strong>Important Notes:</strong>
+            <ul>
+              <li>All fields marked with <span class="required">*</span> are required</li>
+              <li>Employee number must be unique across the system</li>
+              <li>Salary grade must be assigned for payroll processing</li>
+              <li>Bank details are needed for automated salary deposits</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">
+            <span>💾</span>
+            <span>Save Employee</span>
+          </button>
+          <a href="/employees/" class="btn-cancel">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+
+<style>
+  /* Dashboard Layout */
+  .dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f8fafc;
+  }
+
+  .main-content {
+    margin-left: 280px;
+    flex: 1;
+    padding: 2rem;
+  }
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+
+  .btn-secondary:hover {
+    background: #f8fafc;
+  }
+
+  /* Form Container */
+  .form-container {
+    max-width: 900px;
+  }
+
+  /* Alert */
+  .alert {
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1rem;
+  }
+
+  .alert-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+  }
+
+  .alert-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .alert-content strong {
+    color: #991b1b;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .alert-content ul {
+    margin: 0;
+    padding-left: 1.5rem;
+    color: #dc2626;
+  }
+
+  .alert-content li {
+    margin: 0.25rem 0;
+  }
+
+  /* Form Section */
+  .form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .section-header {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f1f5f9;
+  }
+
+  .section-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .section-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .section-header p {
+    margin: 0.25rem 0 0 0;
+    color: #64748b;
+    font-size: 0.875rem;
+  }
+
+  /* Form Grid */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-field.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .form-field label {
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .required {
+    color: #dc2626;
+  }
+
+  .tooltip {
+    cursor: help;
+    font-size: 0.875rem;
+  }
+
+  .form-field input[type="text"],
+  .form-field input[type="email"],
+  .form-field input[type="date"],
+  .form-field input[type="password"],
+  .form-field select {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s;
+    font-family: inherit;
+  }
+
+  .form-field input:focus,
+  .form-field select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .form-field input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+  }
+
+  .field-hint {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-top: 0.375rem;
+  }
+
+  /* Quick Guide */
+  .quick-guide {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 2px solid #7dd3fc;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(125, 211, 252, 0.2);
+  }
+
+  .guide-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+  }
+
+  /* Info Card */
+  .info-card {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .info-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .info-card strong {
+    color: #1e40af;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .info-card ul {
+    margin: 0;
+    padding-left: 1.5rem;
+    color: #1e40af;
+  }
+
+  .info-card li {
+    margin: 0.375rem 0;
+  }
+
+  /* Form Actions */
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    padding-top: 1rem;
+  }
+
+  .btn-primary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+  }
+
+  .btn-cancel {
+    display: flex;
+    align-items: center;
+    padding: 0.875rem 2rem;
+    background: white;
+    color: #64748b;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+
+  .btn-cancel:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .main-content {
+      margin-left: 0;
+      padding: 1rem;
+    }
+
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .form-field.full-width {
+      grid-column: 1;
+    }
+
+    .form-actions {
+      flex-direction: column;
+    }
+  }
+</style>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>

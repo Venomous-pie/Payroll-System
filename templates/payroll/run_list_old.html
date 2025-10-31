@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Payroll Runs{% endblock %}
+{% block content %}
+<h1>💰 Payroll Runs</h1>
+
+<div class="action-buttons">
+  <a class="btn btn-primary" href="/payroll/runs/create/">➕ Create New Payroll Run</a>
+</div>
+
+<div class="card" style="margin-top: 1.5rem;">
+  <input 
+    type="text" 
+    class="search-box" 
+    placeholder="🔍 Search by date or creator..." 
+    data-table-search="payroll-runs-table"
+  />
+  
+  <table id="payroll-runs-table" style="width:100%">
+    <thead>
+      <tr>
+        <th>Created</th>
+        <th>Period</th>
+        <th>Status</th>
+        <th>Created By</th>
+        <th class="actions-cell">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in runs %}
+      <tr>
+        <td>{{ r.created_at|date:"M d, Y h:i A" }}</td>
+        <td><strong>{{ r.period_start|date:"M d" }} to {{ r.period_end|date:"M d, Y" }}</strong></td>
+        <td>
+          {% if r.status == 'DRAFT' %}
+            <span class="badge badge-draft">Draft</span>
+          {% elif r.status == 'REVIEW' %}
+            <span class="badge badge-review">Review</span>
+          {% elif r.status == 'APPROVED' %}
+            <span class="badge badge-approved">Approved</span>
+          {% elif r.status == 'PAID' %}
+            <span class="badge badge-paid">Paid</span>
+          {% else %}
+            <span class="badge">{{ r.status }}</span>
+          {% endif %}
+        </td>
+        <td>{{ r.created_by.get_full_name|default:r.created_by.username }}</td>
+        <td class="actions-cell">
+          <a href="/payroll/runs/{{ r.id }}/payslips/">📋 View Payslips</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5">
+          <div class="empty-state">
+            <div class="empty-state-icon">💼</div>
+            <p><strong>No payroll runs yet</strong></p>
+            <p>Click "Create New Payroll Run" to process your first payroll.</p>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card" style="margin-top: 1.5rem; background: #f0f9ff; border: 1px solid #0ea5e9;">
+  <h3 style="margin-bottom: 0.75rem;">📊 Payroll Workflow</h3>
+  <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+    <span class="badge badge-draft">1. Draft</span>
+    <span style="color: #94a3b8;">→</span>
+    <span class="badge badge-review">2. Review</span>
+    <span style="color: #94a3b8;">→</span>
+    <span class="badge badge-approved">3. Approved</span>
+    <span style="color: #94a3b8;">→</span>
+    <span class="badge badge-paid">4. Paid</span>
+  </div>
+  <p style="margin-top: 1rem; color: #64748b; font-size: 0.875rem;">
+    💡 Click on "View Payslips" to review, approve, and process each payroll run.
+  </p>
+</div>
+{% endblock %}

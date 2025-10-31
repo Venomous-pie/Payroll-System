@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Recalculate Payslips{% endblock %}
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 2rem auto;">
+  <h2 style="margin-bottom: 1.5rem;">🔄 Recalculate Payslips</h2>
+  
+  <div style="background: #fef3c7; border: 1px solid #fbbf24; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+    <strong style="color: #92400e;">⚠️ Warning:</strong>
+    <p style="margin: 0.5rem 0 0 0; color: #92400e;">
+      This will <strong>delete all existing payslips</strong> for this payroll run and recalculate them based on the current period dates.
+    </p>
+  </div>
+
+  <div style="margin-bottom: 1.5rem;">
+    <p><strong>Payroll Run Details:</strong></p>
+    <ul style="line-height: 1.8;">
+      <li><strong>Period:</strong> {{ run.period_start|date:"M d, Y" }} to {{ run.period_end|date:"M d, Y" }}</li>
+      <li><strong>Current Payslips:</strong> {{ run.payslips.count }}</li>
+      <li><strong>Status:</strong> {{ run.status }}</li>
+    </ul>
+  </div>
+
+  <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+    <strong style="color: #1e40af;">💡 What will happen:</strong>
+    <ol style="margin: 0.5rem 0 0 1.5rem; color: #1e40af; line-height: 1.8;">
+      <li>All existing payslips will be deleted</li>
+      <li>New payslips will be calculated for all active employees</li>
+      <li>Calculations will use the current period dates</li>
+      <li>All deductions and contributions will be recalculated</li>
+    </ol>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <div style="display: flex; gap: 1rem;">
+      <button type="submit" class="btn btn-primary" style="background: #dc2626;">
+        🔄 Yes, Recalculate All Payslips
+      </button>
+      <a href="{% url 'payroll_run_payslips' run.id %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<style>
+  .card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn-secondary {
+    background: white;
+    color: #64748b;
+    border: 2px solid #e2e8f0;
+  }
+
+  .btn-secondary:hover {
+    background: #f8fafc;
+  }
+</style>
+{% endblock %}

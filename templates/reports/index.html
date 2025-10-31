@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reports - Payroll Management System</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  {% include 'partials/sidebar.html' %}
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <div>
+        <h1 style="margin: 0; font-size: 1.75rem; color: #1e293b;">📊 Reports & Compliance</h1>
+        <p style="margin: 0.5rem 0 0 0; color: #64748b;">Generate reports and compliance documents</p>
+      </div>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <a href="/staff/analytics/" class="btn-secondary">
+          <span>📈</span>
+          <span>View Analytics</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Report Categories -->
+    <div class="reports-grid">
+      <!-- Compliance Reports -->
+      <div class="report-category-card">
+        <div class="category-header">
+          <div class="category-icon">📋</div>
+          <div>
+            <h3>Compliance Reports</h3>
+            <p>Government-mandated reports and filings</p>
+          </div>
+        </div>
+        <div class="report-items">
+          <a href="/reports/bir/" class="report-item">
+            <div class="report-item-icon">🏛️</div>
+            <div class="report-item-content">
+              <div class="report-item-title">BIR Summary Report</div>
+              <div class="report-item-desc">Bureau of Internal Revenue tax summary</div>
+            </div>
+            <div class="report-item-action">→</div>
+          </a>
+          <a href="/reports/gsis/" class="report-item">
+            <div class="report-item-icon">🏥</div>
+            <div class="report-item-content">
+              <div class="report-item-title">GSIS Summary Report</div>
+              <div class="report-item-desc">Government Service Insurance System contributions</div>
+            </div>
+            <div class="report-item-action">→</div>
+          </a>
+          <a href="/reports/sss/" class="report-item">
+            <div class="report-item-icon">🛡️</div>
+            <div class="report-item-content">
+              <div class="report-item-title">SSS Contributions</div>
+              <div class="report-item-desc">Social Security System monthly contributions</div>
+            </div>
+            <div class="report-item-action">→</div>
+          </a>
+          <a href="/reports/philhealth/" class="report-item">
+            <div class="report-item-icon">💊</div>
+            <div class="report-item-content">
+              <div class="report-item-title">PhilHealth Report</div>
+              <div class="report-item-desc">Health insurance contributions</div>
+            </div>
+            <div class="report-item-action">→</div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Payroll Reports -->
+      <div class="report-category-card">
+        <div class="category-header">
+          <div class="category-icon">💰</div>
+          <div>
+            <h3>Payroll Reports</h3>
+            <p>Salary and compensation reports</p>
+          </div>
+        </div>
+        <div class="report-items">
+          <a href="/reports/payroll-summary/" class="report-item">
+            <div class="report-item-icon">📊</div>
+            <div class="report-item-content">
+              <div class="report-item-title">Payroll Summary</div>
+              <div class="report-item-desc">Monthly payroll summary by department</div>
+            </div>
+            <div class="report-item-action">→</div>
+          </a>
+          <a href="/reports/salary-register/" class="report-item">
+            <div class="report-item-icon">📝</div>
+            <div class="report-item-content">
+              <div class="report-item-title">Salary Register</div>
+              <div class="report-item-desc">Detailed salary register for all employees</div>
+            </div>
+            <div class="report-item-action">→</div>
+          </a>
+          <a href="/reports/deductions/" class="report-item">
+            <div class="report-item-icon">➖</div>
+            <div class="report-item-content">
+              <div class="report-item-title">Deductions Report</div>
+              <div class="report-item-desc">All deductions and loan payments</div>
+            </div>
+            <div class="report-item-action">→</div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Employee Reports -->
+      <div class="report-category-card">
+        <div class="category-header">
+          <div class="category-icon">👥</div>
+          <div>
+            <h3>Employee Reports</h3>
+            <p>Workforce and attendance reports</p>
+          </div>
+        </div>
+        <div class="report-items">
+          <a href="/reports/employee-list/" class="report-item">
+            <div class="report-item-icon">📋</div>
+            <div class="report-item-content">
+              <div class="report-item-title">Employee Master List</div>
+              <div class="report-item-desc">Complete employee directory</div>
+            </div>
+            <div class="report-item-action">→</div>
+          </a>
+          <a href="/reports/attendance/" class="report-item">
+            <div class="report-item-icon">⏰</div>
+            <div class="report-item-content">
+              <div class="report-item-title">Attendance Report</div>
+              <div class="report-item-desc">Monthly attendance summary</div>
+            </div>
+            <div class="report-item-action">→</div>
+          </a>
+          <a href="/reports/leaves/" class="report-item">
+            <div class="report-item-icon">🏖️</div>
+            <div class="report-item-content">
+              <div class="report-item-title">Leave Report</div>
+              <div class="report-item-desc">Leave requests and balances</div>
+            </div>
+            <div class="report-item-action">→</div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Export Options -->
+      <div class="report-category-card">
+        <div class="category-header">
+          <div class="category-icon">📥</div>
+          <div>
+            <h3>Data Export</h3>
+            <p>Export data in various formats</p>
+          </div>
+        </div>
+        <div class="report-items">
+          <a href="/reports/export/csv/" class="report-item">
+            <div class="report-item-icon">📄</div>
+            <div class="report-item-content">
+              <div class="report-item-title">CSV Export</div>
+              <div class="report-item-desc">Export payroll data to CSV</div>
+            </div>
+            <div class="report-item-action">📥</div>
+          </a>
+          <a href="/reports/export/excel/" class="report-item">
+            <div class="report-item-icon">📗</div>
+            <div class="report-item-content">
+              <div class="report-item-title">Excel Export</div>
+              <div class="report-item-desc">Export to Excel spreadsheet</div>
+            </div>
+            <div class="report-item-action">📥</div>
+          </a>
+          <a href="/reports/export/pdf/" class="report-item">
+            <div class="report-item-icon">📕</div>
+            <div class="report-item-content">
+              <div class="report-item-title">PDF Export</div>
+              <div class="report-item-desc">Generate PDF reports</div>
+            </div>
+            <div class="report-item-action">📥</div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="widget" style="margin-top: 2rem;">
+      <h3 style="margin-bottom: 1.5rem;">📈 Quick Statistics</h3>
+      <div class="quick-stats-grid">
+        <div class="quick-stat-item">
+          <div class="quick-stat-icon">💰</div>
+          <div>
+            <div class="quick-stat-value">₱450,000</div>
+            <div class="quick-stat-label">This Month's Payroll</div>
+          </div>
+        </div>
+        <div class="quick-stat-item">
+          <div class="quick-stat-icon">👥</div>
+          <div>
+            <div class="quick-stat-value">15</div>
+            <div class="quick-stat-label">Active Employees</div>
+          </div>
+        </div>
+        <div class="quick-stat-item">
+          <div class="quick-stat-icon">📊</div>
+          <div>
+            <div class="quick-stat-value">6</div>
+            <div class="quick-stat-label">Departments</div>
+          </div>
+        </div>
+        <div class="quick-stat-item">
+          <div class="quick-stat-icon">🏖️</div>
+          <div>
+            <div class="quick-stat-value">8</div>
+            <div class="quick-stat-label">Pending Leaves</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Card -->
+    <div class="info-card" style="margin-top: 1.5rem;">
+      <div class="info-icon">💡</div>
+      <div>
+        <strong>Report Tips:</strong> All reports can be filtered by date range. Compliance reports should be generated monthly for government filings. Export options are available for all report types.
+      </div>
+    </div>
+  </main>
+</div>
+
+<style>
+  /* Dashboard Layout */
+  .dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f8fafc;
+  }
+
+  .main-content {
+    margin-left: 280px;
+    flex: 1;
+    padding: 2rem;
+  }
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+
+  .btn-secondary:hover {
+    background: #f8fafc;
+  }
+
+  /* Reports Grid */
+  .reports-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 1.5rem;
+  }
+
+  /* Report Category Card */
+  .report-category-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .category-header {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f1f5f9;
+  }
+
+  .category-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .category-header h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .category-header p {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.875rem;
+    color: #64748b;
+  }
+
+  /* Report Items */
+  .report-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .report-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .report-item:hover {
+    background: #f1f5f9;
+    border-color: #667eea;
+    transform: translateX(4px);
+  }
+
+  .report-item-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .report-item-content {
+    flex: 1;
+  }
+
+  .report-item-title {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+  }
+
+  .report-item-desc {
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
+  .report-item-action {
+    font-size: 1.25rem;
+    color: #667eea;
+    flex-shrink: 0;
+  }
+
+  /* Widget */
+  .widget {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .widget h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  /* Quick Stats */
+  .quick-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .quick-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .quick-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .quick-stat-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1e293b;
+  }
+
+  .quick-stat-label {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-top: 0.125rem;
+  }
+
+  /* Info Card */
+  .info-card {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .info-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .info-card strong {
+    color: #1e40af;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .main-content {
+      margin-left: 0;
+      padding: 1rem;
+    }
+
+    .reports-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .quick-stats-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Employees{% endblock %}
+{% block content %}
+<h1>👥 Employees</h1>
+
+<div class="action-buttons">
+  <a class="btn btn-primary" href="/employees/create/">➕ Add New Employee</a>
+  <a class="btn btn-secondary" href="/employees/salary-grades/">💰 Salary Grades</a>
+</div>
+
+<div class="card" style="margin-top: 1.5rem;">
+  <input 
+    type="text" 
+    class="search-box" 
+    placeholder="🔍 Search by name, number, department, or position..." 
+    data-table-search="employees-table"
+  />
+  
+  <table id="employees-table" style="width:100%">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Department</th>
+        <th>Position</th>
+        <th>Salary Grade</th>
+        <th>Status</th>
+        <th class="actions-cell">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in employees %}
+        <tr>
+          <td><strong>{{ e.employee_no }}</strong></td>
+          <td>{{ e.last_name }}, {{ e.first_name }}</td>
+          <td>{{ e.department }}</td>
+          <td>{{ e.position }}</td>
+          <td>{{ e.salary_grade|default:"—" }}</td>
+          <td>
+            {% if e.active %}
+              <span class="badge badge-active">Active</span>
+            {% else %}
+              <span class="badge badge-inactive">Inactive</span>
+            {% endif %}
+          </td>
+          <td class="actions-cell">
+            <a href="/employees/{{ e.id }}/edit/">✏️ Edit</a>
+            <a href="/employees/{{ e.id }}/delete/" data-confirm-delete>🗑️ Delete</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="7">
+            <div class="empty-state">
+              <div class="empty-state-icon">📋</div>
+              <p><strong>No employees found</strong></p>
+              <p>Click "Add New Employee" to get started.</p>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<p style="margin-top: 1rem; color: #64748b; font-size: 0.875rem;">
+  💡 <strong>Tip:</strong> Use the search box above to quickly find employees by name, number, department, or position.
+</p>
+{% endblock %}

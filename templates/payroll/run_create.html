@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}New Payroll Run{% endblock %}
+{% block content %}
+<h1>💰 Create New Payroll Run</h1>
+
+<div class="card">
+  <p style="color: #64748b; margin-bottom: 1.5rem;">
+    ℹ️ The system will automatically calculate salaries, deductions, and contributions for all active employees.
+  </p>
+
+  <form method="post" data-validate data-loading>
+    {% csrf_token %}
+    
+    <div class="form-group">
+      <label for="{{ form.period_start.id_for_label }}">
+        Period Start Date <span class="required-indicator">*</span>
+        <span class="tooltip" data-tooltip="First day of the payroll period (e.g., Oct 1)">ℹ️</span>
+      </label>
+      {{ form.period_start }}
+      <span class="help-text">Example: October 1, 2025</span>
+    </div>
+
+    <div class="form-group">
+      <label for="{{ form.period_end.id_for_label }}">
+        Period End Date <span class="required-indicator">*</span>
+        <span class="tooltip" data-tooltip="Last day of the payroll period (e.g., Oct 15)">ℹ️</span>
+      </label>
+      {{ form.period_end }}
+      <span class="help-text">Example: October 15, 2025</span>
+    </div>
+
+    <div style="background: #fef3c7; border: 1px solid #fbbf24; padding: 1rem; border-radius: 6px; margin: 1.5rem 0;">
+      <strong>⚠️ Before you proceed:</strong>
+      <ul style="margin: 0.5rem 0 0 1.5rem; line-height: 1.8;">
+        <li>Make sure attendance has been recorded for all employees</li>
+        <li>Verify that all employees have salary grades assigned</li>
+        <li>Check that contribution tables are up to date</li>
+        <li>This process may take 10-30 seconds</li>
+      </ul>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" type="submit">🚀 Create Payroll Run</button>
+      <a class="btn btn-secondary" href="/payroll/runs/">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<div class="card" style="margin-top: 1.5rem; background: #f0f9ff; border: 1px solid #0ea5e9;">
+  <h3 style="margin-bottom: 0.75rem;">💡 What happens next?</h3>
+  <ol style="margin-left: 1.5rem; line-height: 1.8;">
+    <li>System calculates gross pay based on attendance</li>
+    <li>Computes government contributions (SSS, PhilHealth, Pag-IBIG)</li>
+    <li>Calculates withholding tax</li>
+    <li>Applies loan deductions and other deductions</li>
+    <li>Generates payslips for all active employees</li>
+    <li>Payroll status will be set to <span class="badge badge-draft">DRAFT</span></li>
+  </ol>
+</div>
+{% endblock %}

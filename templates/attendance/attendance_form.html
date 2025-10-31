@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }} - Payroll Management System</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  {% include 'partials/sidebar.html' %}
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <div>
+        <h1 style="margin: 0; font-size: 1.75rem; color: #1e293b;">⏰ {{ title }}</h1>
+        <p style="margin: 0.5rem 0 0 0; color: #64748b;">Record employee attendance for the day</p>
+      </div>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <a href="/attendance/" class="btn-secondary">
+          <span>←</span>
+          <span>Back to List</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Form Container -->
+    <div class="form-container">
+      <!-- Quick Guide -->
+      <div class="quick-guide">
+        <div class="guide-icon">📝</div>
+        <div>
+          <h3 style="margin: 0 0 0.5rem 0; color: #1e293b; font-size: 1.1rem;">Quick Guide to Recording Attendance</h3>
+          <ol style="margin: 0; padding-left: 1.5rem; color: #64748b; font-size: 0.95rem; line-height: 1.6;">
+            <li>Select the employee from the dropdown list</li>
+            <li>Choose the date for this attendance record</li>
+            <li>Enter the time in (when employee arrived)</li>
+            <li>Enter the time out (when employee left) - optional if still working</li>
+            <li>Add any remarks like "Late", "Half-day", or leave blank</li>
+          </ol>
+          <p style="margin: 0.75rem 0 0 0; color: #667eea; font-size: 0.9rem; font-weight: 600;">💡 Tip: You can leave Time Out blank if the employee hasn't left yet</p>
+        </div>
+      </div>
+
+      <form method="post" data-validate>
+        {% csrf_token %}
+        
+        {% if form.errors %}
+          <div class="alert alert-error">
+            <div class="alert-icon">⚠️</div>
+            <div class="alert-content">
+              <strong>Please correct the following errors:</strong>
+              <ul>
+                {% for field, errors in form.errors.items %}
+                  {% for error in errors %}
+                    <li>{{ field|title }}: {{ error }}</li>
+                  {% endfor %}
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- Section 1: Employee & Date -->
+        <div class="form-section">
+          <div class="section-header">
+            <div class="section-icon">👤</div>
+            <div>
+              <h3>Employee & Date Information</h3>
+              <p>Select who and when to record attendance</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-field full-width">
+              <label for="{{ form.employee.id_for_label }}">
+                Employee <span class="required">*</span>
+                <span class="tooltip" title="Select the employee to record attendance for">ℹ️</span>
+              </label>
+              {{ form.employee }}
+              <span class="field-hint">👥 Choose employee from the list</span>
+            </div>
+
+            <div class="form-field full-width">
+              <label for="{{ form.date.id_for_label }}">
+                Date <span class="required">*</span>
+                <span class="tooltip" title="The date of attendance">ℹ️</span>
+              </label>
+              {{ form.date }}
+              <span class="field-hint">📅 Click to select date</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Time Records -->
+        <div class="form-section">
+          <div class="section-header">
+            <div class="section-icon">⏱️</div>
+            <div>
+              <h3>Time In & Time Out</h3>
+              <p>Record arrival and departure times</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="{{ form.time_in.id_for_label }}">
+                Time In
+                <span class="tooltip" title="When the employee arrived">ℹ️</span>
+              </label>
+              {{ form.time_in }}
+              <span class="field-hint">🕐 Example: 08:00 AM</span>
+            </div>
+
+            <div class="form-field">
+              <label for="{{ form.time_out.id_for_label }}">
+                Time Out (Optional)
+                <span class="tooltip" title="When the employee left (leave blank if still working)">ℹ️</span>
+              </label>
+              {{ form.time_out }}
+              <span class="field-hint">🕔 Example: 05:00 PM (or leave blank)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Remarks -->
+        <div class="form-section">
+          <div class="section-header">
+            <div class="section-icon">📝</div>
+            <div>
+              <h3>Additional Notes</h3>
+              <p>Optional remarks or special notes</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-field full-width">
+              <label for="{{ form.remarks.id_for_label }}">
+                Remarks (Optional)
+                <span class="tooltip" title="Add any special notes about this attendance">ℹ️</span>
+              </label>
+              {{ form.remarks }}
+              <span class="field-hint">💬 Example: "Late due to traffic", "Half-day", "On leave PM"</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="info-card">
+          <div class="info-icon">💡</div>
+          <div>
+            <strong>Before You Save - Please Review:</strong>
+            <ul>
+              <li>✅ All fields marked with <span class="required">*</span> are required</li>
+              <li>✅ Each employee can only have one attendance record per date</li>
+              <li>✅ Time Out can be left blank if employee hasn't left yet</li>
+              <li>✅ Use remarks to note special circumstances (late, half-day, etc.)</li>
+              <li>✅ Make sure times are in correct format (HH:MM)</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">
+            <span>💾</span>
+            <span>Save Attendance</span>
+          </button>
+          <a href="/attendance/" class="btn-cancel">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+
+<style>
+  /* Dashboard Layout */
+  .dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f8fafc;
+  }
+
+  .main-content {
+    margin-left: 280px;
+    flex: 1;
+    padding: 2rem;
+  }
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+
+  .btn-secondary:hover {
+    background: #f8fafc;
+  }
+
+  /* Form Container */
+  .form-container {
+    max-width: 900px;
+  }
+
+  /* Quick Guide */
+  .quick-guide {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 2px solid #7dd3fc;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(125, 211, 252, 0.2);
+  }
+
+  .guide-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+  }
+
+  /* Alert */
+  .alert {
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1rem;
+  }
+
+  .alert-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+  }
+
+  .alert-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .alert-content strong {
+    color: #991b1b;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .alert-content ul {
+    margin: 0;
+    padding-left: 1.5rem;
+    color: #dc2626;
+  }
+
+  .alert-content li {
+    margin: 0.25rem 0;
+  }
+
+  /* Form Section */
+  .form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .section-header {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f1f5f9;
+  }
+
+  .section-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .section-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .section-header p {
+    margin: 0.25rem 0 0 0;
+    color: #64748b;
+    font-size: 0.875rem;
+  }
+
+  /* Form Grid */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-field.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .form-field label {
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .required {
+    color: #dc2626;
+  }
+
+  .tooltip {
+    cursor: help;
+    font-size: 0.875rem;
+  }
+
+  .form-field input[type="text"],
+  .form-field input[type="date"],
+  .form-field input[type="time"],
+  .form-field select,
+  .form-field textarea {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s;
+    font-family: inherit;
+  }
+
+  .form-field textarea {
+    min-height: 80px;
+    resize: vertical;
+  }
+
+  .form-field input:focus,
+  .form-field select:focus,
+  .form-field textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .field-hint {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-top: 0.375rem;
+  }
+
+  /* Info Card */
+  .info-card {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .info-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .info-card strong {
+    color: #1e40af;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .info-card ul {
+    margin: 0;
+    padding-left: 1.5rem;
+    color: #1e40af;
+  }
+
+  .info-card li {
+    margin: 0.375rem 0;
+  }
+
+  /* Form Actions */
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    padding-top: 1rem;
+  }
+
+  .btn-primary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+  }
+
+  .btn-cancel {
+    display: flex;
+    align-items: center;
+    padding: 0.875rem 2rem;
+    background: white;
+    color: #64748b;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+
+  .btn-cancel:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .main-content {
+      margin-left: 0;
+      padding: 1rem;
+    }
+
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .form-field.full-width {
+      grid-column: 1;
+    }
+
+    .form-actions {
+      flex-direction: column;
+    }
+  }
+</style>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <span style="font-size: 2rem;">💼</span>
+      <span style="font-weight: 700; font-size: 1.25rem;">Payroll System</span>
+    </div>
+    <div class="user-info">
+      <div class="user-avatar">{{ user.get_full_name|default:user.username|slice:":1"|upper }}</div>
+      <div>
+        <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+        <div class="user-role">HR Staff</div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">
+      <div class="nav-section-title">MAIN</div>
+      <a href="/staff/" class="nav-item {% if request.path == '/staff/' %}active{% endif %}">
+        <span class="nav-icon">📊</span>
+        <span>Dashboard</span>
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">PEOPLE</div>
+      <a href="/employees/" class="nav-item {% if '/employees/' in request.path %}active{% endif %}">
+        <span class="nav-icon">👥</span>
+        <span>Employees</span>
+      </a>
+      <a href="/attendance/" class="nav-item {% if '/attendance/' in request.path and '/leaves/' not in request.path %}active{% endif %}">
+        <span class="nav-icon">⏰</span>
+        <span>Attendance</span>
+      </a>
+      <a href="/attendance/leaves/" class="nav-item {% if '/leaves/' in request.path %}active{% endif %}">
+        <span class="nav-icon">🏖️</span>
+        <span>Leave Requests</span>
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">PAYROLL</div>
+      <a href="/payroll/runs/" class="nav-item {% if '/payroll/runs/' in request.path %}active{% endif %}">
+        <span class="nav-icon">💰</span>
+        <span>Payroll Runs</span>
+      </a>
+      <a href="/payroll/loans/" class="nav-item {% if '/loans/' in request.path %}active{% endif %}">
+        <span class="nav-icon">💳</span>
+        <span>Loans</span>
+      </a>
+      <a href="/payroll/deductions/" class="nav-item {% if '/deductions/' in request.path %}active{% endif %}">
+        <span class="nav-icon">📝</span>
+        <span>Deductions</span>
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">REPORTS</div>
+      <a href="/reports/" class="nav-item {% if '/reports/' in request.path %}active{% endif %}">
+        <span class="nav-icon">📈</span>
+        <span>Reports</span>
+      </a>
+      <a href="/staff/analytics/" class="nav-item {% if '/analytics/' in request.path %}active{% endif %}">
+        <span class="nav-icon">📊</span>
+        <span>Analytics</span>
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">SETTINGS</div>
+      <a href="/employees/salary-grades/" class="nav-item {% if '/salary-grades/' in request.path %}active{% endif %}">
+        <span class="nav-icon">⚙️</span>
+        <span>Salary Grades</span>
+      </a>
+      <a href="/accounts/logout/" class="nav-item">
+        <span class="nav-icon">🚪</span>
+        <span>Logout</span>
+      </a>
+    </div>
+  </nav>
+</aside>
+
+<style>
+  /* Sidebar Styles */
+  .sidebar {
+    width: 280px;
+    background: white;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 100;
+  }
+
+  .sidebar-header {
+    padding: 2rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    color: #667eea;
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.125rem;
+  }
+
+  .user-name {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.95rem;
+  }
+
+  .user-role {
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 1rem 0;
+  }
+
+  .nav-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .nav-section-title {
+    padding: 0.5rem 1.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    color: #64748b;
+    text-decoration: none;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+  }
+
+  .nav-item:hover {
+    background: #f8fafc;
+    color: #667eea;
+  }
+
+  .nav-item.active {
+    background: #f1f5f9;
+    color: #667eea;
+    border-left-color: #667eea;
+    font-weight: 600;
+  }
+
+  .nav-icon {
+    font-size: 1.25rem;
+  }
+</style>

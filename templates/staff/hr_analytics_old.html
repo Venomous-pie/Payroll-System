@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+{% block title %}HR Analytics | Staff/HR{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+  <h1>HR Analytics & Insights</h1>
+  <p>Comprehensive analytics and workforce insights</p>
+</div>
+
+<!-- Key Metrics -->
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div class="metric-icon">👥</div>
+    <div class="metric-content">
+      <h3>{{ total_employees }}</h3>
+      <p>Active Employees</p>
+    </div>
+  </div>
+  
+  <div class="metric-card">
+    <div class="metric-icon">📈</div>
+    <div class="metric-content">
+      <h3>{{ recent_hires }}</h3>
+      <p>Recent Hires (6 months)</p>
+    </div>
+  </div>
+  
+  <div class="metric-card">
+    <div class="metric-icon">⏸️</div>
+    <div class="metric-content">
+      <h3>{{ inactive_employees }}</h3>
+      <p>Inactive Employees</p>
+    </div>
+  </div>
+  
+  <div class="metric-card">
+    <div class="metric-icon">🏢</div>
+    <div class="metric-content">
+      <h3>{{ department_stats|length }}</h3>
+      <p>Departments</p>
+    </div>
+  </div>
+</div>
+
+<!-- Department Breakdown -->
+<div class="analytics-section">
+  <h3>🏢 Department Distribution</h3>
+  <div class="chart-container">
+    {% if department_stats %}
+      <div class="bar-chart">
+        {% for dept in department_stats %}
+        <div class="bar-item">
+          <div class="bar-label">{{ dept.department }}</div>
+          <div class="bar-visual">
+            <div class="bar-fill" style="width: {% widthratio dept.count total_employees 100 %}%"></div>
+            <span class="bar-value">{{ dept.count }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>No department data available.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Position Breakdown -->
+<div class="analytics-section">
+  <h3>💼 Position Distribution</h3>
+  <div class="chart-container">
+    {% if position_stats %}
+      <div class="bar-chart">
+        {% for pos in position_stats %}
+        <div class="bar-item">
+          <div class="bar-label">{{ pos.position }}</div>
+          <div class="bar-visual">
+            <div class="bar-fill" style="width: {% widthratio pos.count total_employees 100 %}%"></div>
+            <span class="bar-value">{{ pos.count }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>No position data available.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Salary Grade Distribution -->
+<div class="analytics-section">
+  <h3>💰 Salary Grade Distribution</h3>
+  <div class="chart-container">
+    {% if salary_grade_stats %}
+      <div class="bar-chart">
+        {% for grade in salary_grade_stats %}
+        <div class="bar-item">
+          <div class="bar-label">{{ grade.salary_grade__code }}</div>
+          <div class="bar-visual">
+            <div class="bar-fill" style="width: {% widthratio grade.count total_employees 100 %}%"></div>
+            <span class="bar-value">{{ grade.count }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>No salary grade data available.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Leave Statistics -->
+<div class="analytics-section">
+  <h3>📋 Leave Request Statistics (Current Year)</h3>
+  <div class="chart-container">
+    {% if leave_stats %}
+      <div class="stats-grid">
+        {% for stat in leave_stats %}
+        <div class="stat-item">
+          <div class="stat-value">{{ stat.count }}</div>
+          <div class="stat-label">{{ stat.status|capfirst }} Requests</div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>No leave request data available.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="actions">
+  <a href="/reports/" class="btn btn-primary">📊 Generate Detailed Reports</a>
+  <a href="/staff/" class="btn btn-secondary">🏠 Back to Staff Dashboard</a>
+</div>
+
+<style>
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.metric-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.metric-icon {
+  font-size: 2.5rem;
+}
+
+.metric-content h3 {
+  margin: 0;
+  font-size: 2rem;
+  color: #333;
+}
+
+.metric-content p {
+  margin: 5px 0 0 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.analytics-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin: 20px 0;
+}
+
+.analytics-section h3 {
+  margin-bottom: 20px;
+  color: #333;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 10px;
+}
+
+.chart-container {
+  margin-top: 15px;
+}
+
+.bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bar-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.bar-label {
+  min-width: 120px;
+  font-weight: 500;
+  color: #333;
+}
+
+.bar-visual {
+  flex: 1;
+  position: relative;
+  height: 30px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #28a745, #20c997);
+  border-radius: 4px;
+  min-width: 2px;
+}
+
+.bar-value {
+  position: absolute;
+  right: 10px;
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #28a745;
+}
+
+.stat-label {
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+.actions {
+  margin-top: 30px;
+  display: flex;
+  gap: 10px;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+
+@media (max-width: 768px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .bar-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  
+  .bar-label {
+    min-width: auto;
+  }
+}
+</style>
+{% endblock %}

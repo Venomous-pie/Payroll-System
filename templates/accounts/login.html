@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Payroll Management System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      max-width: 1000px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 600px;
+    }
+
+    .login-left {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 60px 40px;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-left::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      animation: pulse 15s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .login-left-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .logo {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .login-left h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      line-height: 1.2;
+    }
+
+    .login-left p {
+      font-size: 1.125rem;
+      opacity: 0.95;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+
+    .features {
+      list-style: none;
+      margin-top: 30px;
+    }
+
+    .features li {
+      padding: 12px 0;
+      display: flex;
+      align-items: center;
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .features li::before {
+      content: '✓';
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      text-align: center;
+      line-height: 24px;
+      margin-right: 12px;
+      font-weight: bold;
+    }
+
+    .login-right {
+      padding: 60px 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .login-header {
+      margin-bottom: 40px;
+    }
+
+    .login-header h2 {
+      font-size: 2rem;
+      color: #1e293b;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .login-header p {
+      color: #64748b;
+      font-size: 1rem;
+    }
+
+    .alert {
+      padding: 16px 20px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: start;
+      gap: 12px;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .alert-error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+
+    .alert-error::before {
+      content: '⚠️';
+      font-size: 1.25rem;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: #f8fafc;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-group input::placeholder {
+      color: #94a3b8;
+    }
+
+    .password-toggle {
+      position: relative;
+    }
+
+    .password-toggle-btn {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 1.25rem;
+      padding: 4px;
+      transition: color 0.2s;
+    }
+
+    .password-toggle-btn:hover {
+      color: #334155;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.125rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+    }
+
+    .btn-login:active {
+      transform: translateY(0);
+    }
+
+    .demo-credentials {
+      margin-top: 32px;
+      padding: 20px;
+      background: #f8fafc;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .demo-credentials h3 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #64748b;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .demo-account {
+      padding: 12px;
+      background: white;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .demo-account:hover {
+      border-color: #667eea;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+    }
+
+    .demo-account:last-child {
+      margin-bottom: 0;
+    }
+
+    .demo-account-title {
+      font-weight: 600;
+      color: #334155;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+
+    .demo-account-creds {
+      font-size: 0.85rem;
+      color: #64748b;
+      font-family: 'Courier New', monospace;
+    }
+
+    @media (max-width: 768px) {
+      .login-container {
+        grid-template-columns: 1fr;
+        max-width: 500px;
+      }
+
+      .login-left {
+        display: none;
+      }
+
+      .login-right {
+        padding: 40px 30px;
+      }
+    }
+
+    .footer-text {
+      text-align: center;
+      margin-top: 24px;
+      color: #94a3b8;
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <!-- Left Panel -->
+    <div class="login-left">
+      <div class="login-left-content">
+        <div class="logo">💼</div>
+        <h1>Payroll Management System</h1>
+        <p>Streamline your payroll processing with our comprehensive, user-friendly platform designed for modern businesses.</p>
+        
+        <ul class="features">
+          <li>Automated payroll calculations</li>
+          <li>Government compliance (SSS, PhilHealth, Pag-IBIG)</li>
+          <li>Bank file generation</li>
+          <li>Employee self-service portal</li>
+          <li>Comprehensive reporting</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Right Panel - Login Form -->
+    <div class="login-right">
+      <div class="login-header">
+        <h2>Welcome Back</h2>
+        <p>Sign in to access your account</p>
+      </div>
+
+      {% if form.errors %}
+        <div class="alert alert-error">
+          <div>
+            {% for field, errors in form.errors.items %}
+              {% for error in errors %}
+                <p style="margin: 0;">{{ error }}</p>
+              {% endfor %}
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <form method="post" id="loginForm">
+        {% csrf_token %}
+        
+        <div class="form-group">
+          <label for="{{ form.username.id_for_label }}">Username</label>
+          <input 
+            type="text" 
+            name="username" 
+            id="{{ form.username.id_for_label }}"
+            placeholder="Enter your username"
+            required
+            autofocus
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.password.id_for_label }}">Password</label>
+          <div class="password-toggle">
+            <input 
+              type="password" 
+              name="password" 
+              id="{{ form.password.id_for_label }}"
+              placeholder="Enter your password"
+              required
+            >
+            <button type="button" class="password-toggle-btn" onclick="togglePassword()">
+              👁️
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login">Sign In</button>
+      </form>
+
+      <div class="demo-credentials">
+        <h3>🎯 Demo Accounts</h3>
+        <div class="demo-account" onclick="fillCredentials('hr_staff', 'staff123')">
+          <div class="demo-account-title">👔 HR Staff</div>
+          <div class="demo-account-creds">hr_staff / staff123</div>
+        </div>
+        <div class="demo-account" onclick="fillCredentials('employee1', 'password123')">
+          <div class="demo-account-title">👤 Employee</div>
+          <div class="demo-account-creds">employee1 / password123</div>
+        </div>
+        <div class="demo-account" onclick="fillCredentials('admin', 'admin123')">
+          <div class="demo-account-title">🔐 Admin</div>
+          <div class="demo-account-creds">admin / admin123</div>
+        </div>
+      </div>
+
+      <div class="footer-text">
+        © 2025 Payroll Management System. All rights reserved.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function togglePassword() {
+      const passwordInput = document.getElementById('{{ form.password.id_for_label }}');
+      const toggleBtn = document.querySelector('.password-toggle-btn');
+      
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleBtn.textContent = '🙈';
+      } else {
+        passwordInput.type = 'password';
+        toggleBtn.textContent = '👁️';
+      }
+    }
+
+    function fillCredentials(username, password) {
+      document.getElementById('{{ form.username.id_for_label }}').value = username;
+      document.getElementById('{{ form.password.id_for_label }}').value = password;
+      
+      // Add a subtle animation
+      const form = document.getElementById('loginForm');
+      form.style.transform = 'scale(0.98)';
+      setTimeout(() => {
+        form.style.transform = 'scale(1)';
+      }, 100);
+    }
+
+    // Add smooth transition to form
+    document.getElementById('loginForm').style.transition = 'transform 0.2s ease';
+  </script>
+</body>
+</html>

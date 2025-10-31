@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Leave Approvals{% endblock %}
+{% block content %}
+<h1>Leave Approvals</h1>
+<table class="card" style="width:100%">
+  <tr><th>Submitted</th><th>Employee</th><th>Type</th><th>Dates</th><th>Status</th><th>Action</th></tr>
+  {% for lr in leaves %}
+  <tr>
+    <td>{{ lr.created_at }}</td>
+    <td>{{ lr.employee }}</td>
+    <td>{{ lr.leave_type }}</td>
+    <td>{{ lr.start_date }} to {{ lr.end_date }}</td>
+    <td>{{ lr.status }}</td>
+    <td>
+      {% if lr.status == 'PENDING' %}
+        <a class="btn" href="/attendance/leaves/{{ lr.id }}/APPROVED/">Approve</a>
+        <a class="btn" href="/attendance/leaves/{{ lr.id }}/REJECTED/">Reject</a>
+      {% else %}
+        -
+      {% endif %}
+    </td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="6">No items</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

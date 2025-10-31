@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Salary Grades{% endblock %}
+{% block content %}
+<h1>Salary Grades</h1>
+<p><a class="btn" href="/employees/salary-grades/create/">Create Salary Grade</a> <a class="btn" href="/employees/">Back</a></p>
+<table class="card" style="width:100%">
+  <tr><th>Code</th><th>Step</th><th>Base Pay</th><th></th></tr>
+  {% for g in grades %}
+    <tr>
+      <td>{{ g.code }}</td>
+      <td>{{ g.step }}</td>
+      <td>{{ g.base_pay }}</td>
+      <td><a href="/employees/salary-grades/{{ g.id }}/edit/">Edit</a></td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="4">No records</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

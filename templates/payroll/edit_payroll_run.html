@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% block title %}Edit Payroll Run{% endblock %}
+{% block content %}
+<div class="card" style="max-width: 700px; margin: 2rem auto;">
+  <h2 style="margin-bottom: 1.5rem;">✏️ Edit Payroll Run Dates</h2>
+  
+  <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+    <strong style="color: #1e40af;">ℹ️ Note:</strong>
+    <p style="margin: 0.5rem 0 0 0; color: #1e40af;">
+      After updating the dates, you need to click <strong>"Recalculate Payslips"</strong> to update the calculations.
+    </p>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    
+    <div style="margin-bottom: 1.5rem;">
+      <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #475569;">
+        Period Start Date <span style="color: #dc2626;">*</span>
+      </label>
+      {{ form.period_start }}
+      <span style="font-size: 0.875rem; color: #94a3b8; display: block; margin-top: 0.25rem;">
+        Example: October 1, 2025
+      </span>
+    </div>
+
+    <div style="margin-bottom: 1.5rem;">
+      <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #475569;">
+        Period End Date <span style="color: #dc2626;">*</span>
+      </label>
+      {{ form.period_end }}
+      <span style="font-size: 0.875rem; color: #94a3b8; display: block; margin-top: 0.25rem;">
+        Example: October 15, 2025
+      </span>
+    </div>
+
+    {% if form.errors %}
+      <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+        <strong style="color: #991b1b;">⚠️ Errors:</strong>
+        <ul style="margin: 0.5rem 0 0 1.5rem; color: #dc2626;">
+          {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+              <li>{{ field|title }}: {{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <div style="background: #fef3c7; border: 1px solid #fbbf24; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+      <strong style="color: #92400e;">⚠️ Important:</strong>
+      <p style="margin: 0.5rem 0 0 0; color: #92400e;">
+        Changing dates will NOT automatically recalculate payslips. After saving, click <strong>"Recalculate Payslips"</strong> to update calculations.
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 1rem;">
+      <button type="submit" class="btn btn-primary">
+        💾 Save Dates
+      </button>
+      <a href="{% url 'payroll_run_payslips' run.id %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<style>
+  .card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  input[type="date"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: all 0.3s;
+  }
+
+  input[type="date"]:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+  }
+
+  .btn-secondary {
+    background: white;
+    color: #64748b;
+    border: 2px solid #e2e8f0;
+  }
+
+  .btn-secondary:hover {
+    background: #f8fafc;
+  }
+</style>
+{% endblock %}

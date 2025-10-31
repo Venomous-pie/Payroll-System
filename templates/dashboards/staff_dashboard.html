@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HR Dashboard - Payroll Management System</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <span style="font-size: 2rem;">💼</span>
+        <span style="font-weight: 700; font-size: 1.25rem;">Payroll System</span>
+      </div>
+      <div class="user-info">
+        <div class="user-avatar">{{ user.get_full_name|default:user.username|slice:":1"|upper }}</div>
+        <div>
+          <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+          <div class="user-role">HR Staff</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">MAIN</div>
+        <a href="/staff/" class="nav-item active">
+          <span class="nav-icon">📊</span>
+          <span>Dashboard</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">PEOPLE</div>
+        <a href="/employees/" class="nav-item">
+          <span class="nav-icon">👥</span>
+          <span>Employees</span>
+        </a>
+        <a href="/attendance/" class="nav-item">
+          <span class="nav-icon">⏰</span>
+          <span>Attendance</span>
+        </a>
+        <a href="/attendance/leaves/" class="nav-item">
+          <span class="nav-icon">🏖️</span>
+          <span>Leave Requests</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">PAYROLL</div>
+        <a href="/payroll/runs/" class="nav-item">
+          <span class="nav-icon">💰</span>
+          <span>Payroll Runs</span>
+        </a>
+        <a href="/payroll/loans/" class="nav-item">
+          <span class="nav-icon">💳</span>
+          <span>Loans</span>
+        </a>
+        <a href="/payroll/deductions/" class="nav-item">
+          <span class="nav-icon">📝</span>
+          <span>Deductions</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">REPORTS</div>
+        <a href="/reports/" class="nav-item">
+          <span class="nav-icon">📈</span>
+          <span>Reports</span>
+        </a>
+        <a href="/staff/analytics/" class="nav-item">
+          <span class="nav-icon">📊</span>
+          <span>Analytics</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">SETTINGS</div>
+        <a href="/employees/salary-grades/" class="nav-item">
+          <span class="nav-icon">⚙️</span>
+          <span>Salary Grades</span>
+        </a>
+        <a href="/accounts/logout/" class="nav-item">
+          <span class="nav-icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <div>
+        <h1 style="margin: 0; font-size: 1.75rem; color: #1e293b;">Welcome back, {{ user.get_full_name|default:user.username }}! 👋</h1>
+        <p style="margin: 0.5rem 0 0 0; color: #64748b;">Here's what's happening with your payroll today.</p>
+      </div>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <a href="/payroll/runs/create/" class="btn-primary">
+          <span>➕</span>
+          <span>New Payroll Run</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">👥</div>
+        <div class="stat-content">
+          <div class="stat-label">Total Employees</div>
+          <div class="stat-value">{{ total_employees|default:"15" }}</div>
+          <div class="stat-change positive">↑ 2 this month</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">🏖️</div>
+        <div class="stat-content">
+          <div class="stat-label">Pending Leaves</div>
+          <div class="stat-value">{{ pending_leaves|default:"8" }}</div>
+          <div class="stat-change">Awaiting approval</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">💰</div>
+        <div class="stat-content">
+          <div class="stat-label">Active Payroll</div>
+          <div class="stat-value">{{ active_payroll|default:"1" }}</div>
+          <div class="stat-change">In progress</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">📊</div>
+        <div class="stat-content">
+          <div class="stat-label">This Month</div>
+          <div class="stat-value">₱{{ monthly_total|default:"450K" }}</div>
+          <div class="stat-change positive">↑ 5% vs last month</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions & Widgets -->
+    <div class="content-grid">
+      <!-- Quick Actions -->
+      <div class="widget">
+        <div class="widget-header">
+          <h3>⚡ Quick Actions</h3>
+        </div>
+        <div class="quick-actions">
+          <a href="/payroll/runs/create/" class="action-card">
+            <div class="action-icon">💰</div>
+            <div>
+              <div class="action-title">New Payroll Run</div>
+              <div class="action-desc">Start processing payroll</div>
+            </div>
+          </a>
+          <a href="/employees/create/" class="action-card">
+            <div class="action-icon">👤</div>
+            <div>
+              <div class="action-title">Add Employee</div>
+              <div class="action-desc">Register new employee</div>
+            </div>
+          </a>
+          <a href="/attendance/leaves/" class="action-card">
+            <div class="action-icon">✅</div>
+            <div>
+              <div class="action-title">Approve Leaves</div>
+              <div class="action-desc">Review pending requests</div>
+            </div>
+          </a>
+          <a href="/reports/" class="action-card">
+            <div class="action-icon">📈</div>
+            <div>
+              <div class="action-title">Generate Report</div>
+              <div class="action-desc">Export payroll data</div>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Recent Payroll Runs -->
+      <div class="widget">
+        <div class="widget-header">
+          <h3>💰 Recent Payroll Runs</h3>
+          <a href="/payroll/runs/" class="widget-link">View All →</a>
+        </div>
+        <div class="activity-list">
+          <div class="activity-item">
+            <div class="activity-icon" style="background: #dbeafe;">💰</div>
+            <div class="activity-content">
+              <div class="activity-title">Payroll Run #28</div>
+              <div class="activity-desc">Oct 30 - Nov 01, 2025</div>
+            </div>
+            <span class="badge badge-review">Review</span>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon" style="background: #dcfce7;">💰</div>
+            <div class="activity-content">
+              <div class="activity-title">Payroll Run #27</div>
+              <div class="activity-desc">Oct 15 - Oct 29, 2025</div>
+            </div>
+            <span class="badge badge-paid">Paid</span>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon" style="background: #dcfce7;">💰</div>
+            <div class="activity-content">
+              <div class="activity-title">Payroll Run #26</div>
+              <div class="activity-desc">Oct 01 - Oct 14, 2025</div>
+            </div>
+            <span class="badge badge-paid">Paid</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending Tasks -->
+      <div class="widget">
+        <div class="widget-header">
+          <h3>📋 Pending Tasks</h3>
+        </div>
+        <div class="task-list">
+          <div class="task-item">
+            <div class="task-checkbox">
+              <input type="checkbox" id="task1">
+              <label for="task1"></label>
+            </div>
+            <div class="task-content">
+              <div class="task-title">Approve 8 leave requests</div>
+              <div class="task-meta">
+                <span class="task-priority high">High Priority</span>
+                <span class="task-due">Due today</span>
+              </div>
+            </div>
+          </div>
+          <div class="task-item">
+            <div class="task-checkbox">
+              <input type="checkbox" id="task2">
+              <label for="task2"></label>
+            </div>
+            <div class="task-content">
+              <div class="task-title">Review payroll run #28</div>
+              <div class="task-meta">
+                <span class="task-priority medium">Medium</span>
+                <span class="task-due">Due tomorrow</span>
+              </div>
+            </div>
+          </div>
+          <div class="task-item">
+            <div class="task-checkbox">
+              <input type="checkbox" id="task3">
+              <label for="task3"></label>
+            </div>
+            <div class="task-content">
+              <div class="task-title">Update salary grades</div>
+              <div class="task-meta">
+                <span class="task-priority low">Low</span>
+                <span class="task-due">This week</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="widget">
+        <div class="widget-header">
+          <h3>🕐 Recent Activity</h3>
+        </div>
+        <div class="activity-list">
+          <div class="activity-item">
+            <div class="activity-icon" style="background: #dbeafe;">👤</div>
+            <div class="activity-content">
+              <div class="activity-title">New employee added</div>
+              <div class="activity-desc">Juan Dela Cruz joined the team</div>
+            </div>
+            <div class="activity-time">2h ago</div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon" style="background: #fef3c7;">✅</div>
+            <div class="activity-content">
+              <div class="activity-title">Leave approved</div>
+              <div class="activity-desc">Maria Santos - Sick Leave</div>
+            </div>
+            <div class="activity-time">5h ago</div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon" style="background: #dcfce7;">💰</div>
+            <div class="activity-content">
+              <div class="activity-title">Payroll completed</div>
+              <div class="activity-desc">Run #27 marked as paid</div>
+            </div>
+            <div class="activity-time">1d ago</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<style>
+  /* Dashboard Layout */
+  .dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f8fafc;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 280px;
+    background: white;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .sidebar-header {
+    padding: 2rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    color: #667eea;
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.125rem;
+  }
+
+  .user-name {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.95rem;
+  }
+
+  .user-role {
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 1rem 0;
+  }
+
+  .nav-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .nav-section-title {
+    padding: 0.5rem 1.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    color: #64748b;
+    text-decoration: none;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+  }
+
+  .nav-item:hover {
+    background: #f8fafc;
+    color: #667eea;
+  }
+
+  .nav-item.active {
+    background: #f1f5f9;
+    color: #667eea;
+    border-left-color: #667eea;
+    font-weight: 600;
+  }
+
+  .nav-icon {
+    font-size: 1.25rem;
+  }
+
+  /* Main Content */
+  .main-content {
+    margin-left: 280px;
+    flex: 1;
+    padding: 2rem;
+  }
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .btn-primary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    flex-shrink: 0;
+  }
+
+  .stat-content {
+    flex: 1;
+  }
+
+  .stat-label {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-value {
+    font-size: 1.875rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-change {
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
+  .stat-change.positive {
+    color: #10b981;
+  }
+
+  /* Content Grid */
+  .content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .widget {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .widget-header h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .widget-link {
+    font-size: 0.875rem;
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .widget-link:hover {
+    text-decoration: underline;
+  }
+
+  /* Quick Actions */
+  .quick-actions {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .action-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: 1px solid #e2e8f0;
+  }
+
+  .action-card:hover {
+    background: #f1f5f9;
+    border-color: #667eea;
+    transform: translateX(4px);
+  }
+
+  .action-icon {
+    font-size: 1.75rem;
+  }
+
+  .action-title {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+  }
+
+  .action-desc {
+    font-size: 0.875rem;
+    color: #64748b;
+  }
+
+  /* Activity List */
+  .activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .activity-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .activity-content {
+    flex: 1;
+  }
+
+  .activity-title {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .activity-desc {
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+
+  .activity-time {
+    font-size: 0.8rem;
+    color: #94a3b8;
+  }
+
+  /* Badges */
+  .badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .badge-review {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .badge-paid {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  /* Task List */
+  .task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .task-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .task-checkbox {
+    flex-shrink: 0;
+  }
+
+  .task-checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+  }
+
+  .task-content {
+    flex: 1;
+  }
+
+  .task-title {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+  }
+
+  .task-meta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .task-priority {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .task-priority.high {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .task-priority.medium {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .task-priority.low {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .task-due {
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .sidebar {
+      transform: translateX(-100%);
+    }
+
+    .main-content {
+      margin-left: 0;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .content-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+</body>
+</html>

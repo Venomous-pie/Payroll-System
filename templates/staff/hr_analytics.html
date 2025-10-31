@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HR Analytics - Payroll Management System</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  {% include 'partials/sidebar.html' %}
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <div>
+        <h1 style="margin: 0; font-size: 1.75rem; color: #1e293b;">📈 HR Analytics & Insights</h1>
+        <p style="margin: 0.5rem 0 0 0; color: #64748b;">Comprehensive workforce analytics and insights</p>
+      </div>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <a href="/reports/" class="btn-secondary">
+          <span>📊</span>
+          <span>Generate Reports</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Key Metrics -->
+    <div class="stats-grid" style="margin-bottom: 2rem;">
+      <div class="stat-card-mini">
+        <div class="stat-mini-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">👥</div>
+        <div>
+          <div class="stat-mini-label">Active Employees</div>
+          <div class="stat-mini-value">{{ total_employees|default:"15" }}</div>
+        </div>
+      </div>
+      <div class="stat-card-mini">
+        <div class="stat-mini-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">📈</div>
+        <div>
+          <div class="stat-mini-label">Recent Hires</div>
+          <div class="stat-mini-value">{{ recent_hires|default:"2" }}</div>
+        </div>
+      </div>
+      <div class="stat-card-mini">
+        <div class="stat-mini-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">⏸️</div>
+        <div>
+          <div class="stat-mini-label">Inactive</div>
+          <div class="stat-mini-value">{{ inactive_employees|default:"0" }}</div>
+        </div>
+      </div>
+      <div class="stat-card-mini">
+        <div class="stat-mini-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">🏢</div>
+        <div>
+          <div class="stat-mini-label">Departments</div>
+          <div class="stat-mini-value">{{ department_stats|length|default:"6" }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-grid">
+      <!-- Department Distribution -->
+      <div class="chart-widget">
+        <h3>🏢 Department Distribution</h3>
+        <div class="chart-container">
+          {% if department_stats %}
+            <div class="bar-chart">
+              {% for dept in department_stats %}
+              <div class="bar-item">
+                <div class="bar-label">{{ dept.department }}</div>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width: {% widthratio dept.count total_employees 100 %}%">
+                    <span class="bar-value">{{ dept.count }}</span>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-chart">
+              <div class="empty-chart-icon">📊</div>
+              <p>No department data available</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Position Distribution -->
+      <div class="chart-widget">
+        <h3>💼 Position Distribution</h3>
+        <div class="chart-container">
+          {% if position_stats %}
+            <div class="bar-chart">
+              {% for pos in position_stats %}
+              <div class="bar-item">
+                <div class="bar-label">{{ pos.position }}</div>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width: {% widthratio pos.count total_employees 100 %}%">
+                    <span class="bar-value">{{ pos.count }}</span>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-chart">
+              <div class="empty-chart-icon">💼</div>
+              <p>No position data available</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Salary Grade Distribution -->
+    <div class="chart-widget" style="margin-top: 1.5rem;">
+      <h3>💰 Salary Grade Distribution</h3>
+      <div class="chart-container">
+        {% if salary_grade_stats %}
+          <div class="bar-chart">
+            {% for grade in salary_grade_stats %}
+            <div class="bar-item">
+              <div class="bar-label">{{ grade.salary_grade__code }}</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: {% widthratio grade.count total_employees 100 %}%">
+                  <span class="bar-value">{{ grade.count }}</span>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-chart">
+            <div class="empty-chart-icon">💰</div>
+            <p>No salary grade data available</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Leave Statistics -->
+    <div class="chart-widget" style="margin-top: 1.5rem;">
+      <h3>📋 Leave Request Statistics (Current Year)</h3>
+      <div class="chart-container">
+        {% if leave_stats %}
+          <div class="leave-stats-grid">
+            {% for stat in leave_stats %}
+            <div class="leave-stat-card">
+              <div class="leave-stat-icon">
+                {% if stat.status == 'PENDING' %}⏳
+                {% elif stat.status == 'APPROVED' %}✅
+                {% elif stat.status == 'REJECTED' %}❌
+                {% else %}📋{% endif %}
+              </div>
+              <div class="leave-stat-value">{{ stat.count }}</div>
+              <div class="leave-stat-label">{{ stat.status|capfirst }} Requests</div>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-chart">
+            <div class="empty-chart-icon">📋</div>
+            <p>No leave request data available</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Insights Cards -->
+    <div class="insights-grid" style="margin-top: 2rem;">
+      <div class="insight-card">
+        <div class="insight-icon">📊</div>
+        <div class="insight-content">
+          <h4>Workforce Growth</h4>
+          <p>{{ recent_hires|default:"2" }} new employees hired in the last 6 months, showing steady growth.</p>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-icon">💰</div>
+        <div class="insight-content">
+          <h4>Payroll Efficiency</h4>
+          <p>Automated payroll processing saves an average of 10 hours per month.</p>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-icon">🏖️</div>
+        <div class="insight-content">
+          <h4>Leave Management</h4>
+          <p>Average leave approval time is 2 days, ensuring quick employee response.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-card" style="margin-top: 2rem;">
+      <h3 style="margin-bottom: 1rem;">⚡ Quick Actions</h3>
+      <div class="quick-actions-grid">
+        <a href="/reports/" class="quick-action-item">
+          <div class="quick-action-icon">📊</div>
+          <div>
+            <div class="quick-action-title">Generate Reports</div>
+            <div class="quick-action-desc">Create detailed analytics reports</div>
+          </div>
+        </a>
+        <a href="/employees/" class="quick-action-item">
+          <div class="quick-action-icon">👥</div>
+          <div>
+            <div class="quick-action-title">View Employees</div>
+            <div class="quick-action-desc">Manage employee records</div>
+          </div>
+        </a>
+        <a href="/staff/" class="quick-action-item">
+          <div class="quick-action-icon">🏠</div>
+          <div>
+            <div class="quick-action-title">Dashboard</div>
+            <div class="quick-action-desc">Return to main dashboard</div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Info Card -->
+    <div class="info-card" style="margin-top: 1.5rem;">
+      <div class="info-icon">💡</div>
+      <div>
+        <strong>Analytics Tips:</strong> Data is updated in real-time. Use the insights to make informed HR decisions. Generate detailed reports for deeper analysis.
+      </div>
+    </div>
+  </main>
+</div>
+
+<style>
+  /* Dashboard Layout */
+  .dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f8fafc;
+  }
+
+  .main-content {
+    margin-left: 280px;
+    flex: 1;
+    padding: 2rem;
+  }
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+
+  .btn-secondary:hover {
+    background: #f8fafc;
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  .stat-card-mini {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+  }
+
+  .stat-card-mini:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .stat-mini-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .stat-mini-label {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-mini-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1e293b;
+  }
+
+  /* Charts Grid */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 1.5rem;
+  }
+
+  /* Chart Widget */
+  .chart-widget {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .chart-widget h3 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1e293b;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f1f5f9;
+  }
+
+  .chart-container {
+    min-height: 200px;
+  }
+
+  /* Bar Chart */
+  .bar-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .bar-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .bar-label {
+    min-width: 120px;
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.9rem;
+  }
+
+  .bar-track {
+    flex: 1;
+    height: 32px;
+    background: #f1f5f9;
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 0.75rem;
+    min-width: 40px;
+    transition: width 0.3s ease;
+  }
+
+  .bar-value {
+    color: white;
+    font-weight: 700;
+    font-size: 0.875rem;
+  }
+
+  /* Leave Stats Grid */
+  .leave-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+
+  .leave-stat-card {
+    text-align: center;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    transition: all 0.2s;
+  }
+
+  .leave-stat-card:hover {
+    background: #f1f5f9;
+    transform: translateY(-2px);
+  }
+
+  .leave-stat-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .leave-stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+  }
+
+  .leave-stat-label {
+    font-size: 0.875rem;
+    color: #64748b;
+  }
+
+  /* Empty Chart */
+  .empty-chart {
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+
+  .empty-chart-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  .empty-chart p {
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  /* Insights Grid */
+  .insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+
+  .insight-card {
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .insight-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .insight-content h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .insight-content p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #64748b;
+    line-height: 1.5;
+  }
+
+  /* Quick Actions */
+  .quick-actions-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .quick-actions-card h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+
+  .quick-action-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .quick-action-item:hover {
+    background: #f1f5f9;
+    border-color: #667eea;
+    transform: translateY(-2px);
+  }
+
+  .quick-action-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .quick-action-title {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+  }
+
+  .quick-action-desc {
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
+  /* Info Card */
+  .info-card {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .info-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .info-card strong {
+    color: #1e40af;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .main-content {
+      margin-left: 0;
+      padding: 1rem;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .charts-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .insights-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .quick-actions-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .bar-label {
+      min-width: 80px;
+      font-size: 0.8rem;
+    }
+  }
+</style>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>

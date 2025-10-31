@@ -1,0 +1,650 @@
+{% extends 'base.html' %}
+{% block title %}Audit Logs | Staff/HR{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+  <h1>System Audit Logs</h1>
+  <p>Monitor system activity and user actions for security and compliance</p>
+</div>
+
+<!-- Log Statistics -->
+<div class="stats-grid">
+  <div class="stat-card total">
+    <div class="stat-icon">📋</div>
+    <div class="stat-content">
+      <h3>{{ logs|length }}</h3>
+      <p>Recent Log Entries</p>
+    </div>
+  </div>
+  
+  <div class="stat-card success">
+    <div class="stat-icon">✅</div>
+    <div class="stat-content">
+      <h3>
+        {% with success_count=0 %}
+          {% for log in logs %}
+            {% if log.status_code >= 200 and log.status_code < 300 %}{{ success_count|add:1 }}{% endif %}
+          {% endfor %}
+        {% endwith %}
+      </h3>
+      <p>Successful Requests</p>
+    </div>
+  </div>
+  
+  <div class="stat-card errors">
+    <div class="stat-icon">❌</div>
+    <div class="stat-content">
+      <h3>
+        {% with error_count=0 %}
+          {% for log in logs %}
+            {% if log.status_code >= 400 %}{{ error_count|add:1 }}{% endif %}
+          {% endfor %}
+        {% endwith %}
+      </h3>
+      <p>Error Requests</p>
+    </div>
+  </div>
+  
+  <div class="stat-card users">
+    <div class="stat-icon">👥</div>
+    <div class="stat-content">
+      <h3>
+        {% regroup logs by user as unique_users %}
+          {{ unique_users|length }}
+      </h3>
+      <p>Active Users</p>
+    </div>
+  </div>
+</div>
+
+<!-- Filter Controls -->
+<div class="filter-section">
+  <div class="filter-controls">
+    <div class="filter-group">
+      <label for="methodFilter">Method:</label>
+      <select id="methodFilter" class="form-control">
+        <option value="">All Methods</option>
+        <option value="GET">GET</option>
+        <option value="POST">POST</option>
+        <option value="PUT">PUT</option>
+        <option value="DELETE">DELETE</option>
+      </select>
+    </div>
+    
+    <div class="filter-group">
+      <label for="statusFilter">Status:</label>
+      <select id="statusFilter" class="form-control">
+        <option value="">All Status</option>
+        <option value="2xx">Success (2xx)</option>
+        <option value="3xx">Redirect (3xx)</option>
+        <option value="4xx">Client Error (4xx)</option>
+        <option value="5xx">Server Error (5xx)</option>
+      </select>
+    </div>
+    
+    <div class="filter-group">
+      <label for="userFilter">User:</label>
+      <select id="userFilter" class="form-control">
+        <option value="">All Users</option>
+        {% regroup logs by user as user_list %}
+        {% for user_group in user_list %}
+          {% if user_group.grouper %}
+            <option value="{{ user_group.grouper.username }}">{{ user_group.grouper.username }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+    
+    <div class="filter-group">
+      <button id="clearFilters" class="btn btn-outline">Clear Filters</button>
+    </div>
+  </div>
+</div>
+
+<!-- Audit Logs Table -->
+<div class="section-card">
+  <h3>📊 System Activity Log</h3>
+  {% if logs %}
+    <div class="table-container">
+      <table class="data-table" id="auditTable">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>User</th>
+            <th>Method</th>
+            <th>Path</th>
+            <th>Status</th>
+            <th>IP Address</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr data-method="{{ log.method }}" data-status="{{ log.status_code }}" data-user="{{ log.user.username|default:'anonymous' }}">
+            <td>
+              <div class="timestamp">
+                <strong>{{ log.created_at|date:"M d, Y" }}</strong><br>
+                <small>{{ log.created_at|time:"g:i:s A" }}</small>
+              </div>
+            </td>
+            <td>
+              {% if log.user %}
+                <div class="user-info">
+                  <strong>{{ log.user.username }}</strong><br>
+                  <small>{{ log.user.get_full_name|default:"No name" }}</small>
+                </div>
+              {% else %}
+                <span class="anonymous-user">Anonymous</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="method-badge method-{{ log.method|lower }}">{{ log.method }}</span>
+            </td>
+            <td>
+              <div class="path-info">
+                <code>{{ log.path }}</code>
+              </div>
+            </td>
+            <td>
+              {% if log.status_code >= 200 and log.status_code < 300 %}
+                <span class="status-badge status-success">{{ log.status_code }}</span>
+              {% elif log.status_code >= 300 and log.status_code < 400 %}
+                <span class="status-badge status-redirect">{{ log.status_code }}</span>
+              {% elif log.status_code >= 400 and log.status_code < 500 %}
+                <span class="status-badge status-client-error">{{ log.status_code }}</span>
+              {% else %}
+                <span class="status-badge status-server-error">{{ log.status_code }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="ip-address">{{ log.ip|default:"Unknown" }}</span>
+            </td>
+            <td>
+              <div class="log-details">
+                {% if log.status_code >= 400 %}
+                  <span class="error-indicator">⚠️ Error</span>
+                {% elif log.method == "POST" %}
+                  <span class="action-indicator">✏️ Action</span>
+                {% elif log.method == "DELETE" %}
+                  <span class="delete-indicator">🗑️ Delete</span>
+                {% else %}
+                  <span class="view-indicator">👁️ View</span>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Pagination Info -->
+    <div class="pagination-info">
+      <p>Showing {{ logs|length }} most recent log entries</p>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p>No audit logs found.</p>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Security Insights -->
+<div class="section-card">
+  <h3>🔒 Security Insights</h3>
+  <div class="insights-grid">
+    <div class="insight-card">
+      <div class="insight-icon">🚨</div>
+      <div class="insight-content">
+        <h4>Failed Login Attempts</h4>
+        <p>Monitor failed authentication attempts and potential security threats.</p>
+        <span class="insight-value">
+          {% with failed_logins=0 %}
+            {% for log in logs %}
+              {% if log.path == "/accounts/login/" and log.status_code >= 400 %}{{ failed_logins|add:1 }}{% endif %}
+            {% endfor %}
+          {% endwith %} attempts
+        </span>
+      </div>
+    </div>
+    
+    <div class="insight-card">
+      <div class="insight-icon">🌐</div>
+      <div class="insight-content">
+        <h4>Unique IP Addresses</h4>
+        <p>Track the number of different IP addresses accessing the system.</p>
+        <span class="insight-value">
+          {% regroup logs by ip as unique_ips %}
+            {{ unique_ips|length }} IPs
+        </span>
+      </div>
+    </div>
+    
+    <div class="insight-card">
+      <div class="insight-icon">⏰</div>
+      <div class="insight-content">
+        <h4>Peak Activity</h4>
+        <p>Identify peak usage times for system optimization.</p>
+        <span class="insight-value">
+          {% if logs %}
+            {{ logs.0.created_at|time:"g A" }} - {{ logs.0.created_at|date:"M d" }}
+          {% else %}
+            No data
+          {% endif %}
+        </span>
+      </div>
+    </div>
+    
+    <div class="insight-card">
+      <div class="insight-icon">📈</div>
+      <div class="insight-content">
+        <h4>System Health</h4>
+        <p>Overall system performance based on error rates.</p>
+        <span class="insight-value">
+          {% with error_rate=0 %}
+            {% for log in logs %}
+              {% if log.status_code >= 400 %}{{ error_rate|add:1 }}{% endif %}
+            {% endfor %}
+            {% if logs %}
+              {% widthratio error_rate logs|length 100 %}% errors
+            {% else %}
+              No data
+            {% endif %}
+          {% endwith %}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="actions">
+  <a href="/django-admin/accounts/auditlog/" class="btn btn-primary">🔧 Advanced Log Management</a>
+  <a href="/staff/export/audit-logs/" class="btn btn-outline">📤 Export Logs</a>
+  <a href="/staff/" class="btn btn-secondary">🏠 Back to Staff Dashboard</a>
+</div>
+
+<style>
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border-left: 4px solid;
+}
+
+.stat-card.total {
+  border-left-color: #007bff;
+}
+
+.stat-card.success {
+  border-left-color: #28a745;
+}
+
+.stat-card.errors {
+  border-left-color: #dc3545;
+}
+
+.stat-card.users {
+  border-left-color: #6f42c1;
+}
+
+.stat-icon {
+  font-size: 2rem;
+}
+
+.stat-content h3 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #333;
+}
+
+.stat-content p {
+  margin: 5px 0 0 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.filter-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin: 20px 0;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 20px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.filter-group label {
+  font-weight: 500;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.form-control {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  min-width: 120px;
+}
+
+.section-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin: 20px 0;
+}
+
+.section-card h3 {
+  margin-bottom: 15px;
+  color: #333;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 10px;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-top: 15px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.data-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.data-table tr:hover {
+  background: #f8f9fa;
+}
+
+.timestamp strong {
+  color: #333;
+}
+
+.timestamp small {
+  color: #666;
+}
+
+.user-info strong {
+  color: #333;
+}
+
+.user-info small {
+  color: #666;
+}
+
+.anonymous-user {
+  color: #999;
+  font-style: italic;
+}
+
+.method-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+}
+
+.method-get {
+  background: #17a2b8;
+}
+
+.method-post {
+  background: #28a745;
+}
+
+.method-put {
+  background: #ffc107;
+  color: #212529;
+}
+
+.method-delete {
+  background: #dc3545;
+}
+
+.path-info code {
+  background: #f8f9fa;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 0.9rem;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+}
+
+.status-success {
+  background: #28a745;
+}
+
+.status-redirect {
+  background: #17a2b8;
+}
+
+.status-client-error {
+  background: #ffc107;
+  color: #212529;
+}
+
+.status-server-error {
+  background: #dc3545;
+}
+
+.ip-address {
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.log-details span {
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.error-indicator {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.action-indicator {
+  background: #e8f5e8;
+  color: #2e7d32;
+}
+
+.delete-indicator {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.view-indicator {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.pagination-info {
+  margin-top: 15px;
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.insight-card {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.insight-icon {
+  font-size: 1.5rem;
+  align-self: flex-start;
+}
+
+.insight-content h4 {
+  margin: 0;
+  color: #333;
+}
+
+.insight-content p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+  flex-grow: 1;
+}
+
+.insight-value {
+  font-weight: 600;
+  color: #007bff;
+  font-size: 1.1rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.actions {
+  margin-top: 30px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-outline {
+  background: transparent;
+  color: #007bff;
+  border: 1px solid #007bff;
+}
+
+.btn-outline:hover {
+  background: #007bff;
+  color: white;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .filter-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .insights-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+<script>
+// Filter functionality
+document.getElementById('methodFilter').addEventListener('change', filterTable);
+document.getElementById('statusFilter').addEventListener('change', filterTable);
+document.getElementById('userFilter').addEventListener('change', filterTable);
+document.getElementById('clearFilters').addEventListener('click', clearFilters);
+
+function filterTable() {
+  const methodFilter = document.getElementById('methodFilter').value;
+  const statusFilter = document.getElementById('statusFilter').value;
+  const userFilter = document.getElementById('userFilter').value;
+  const rows = document.querySelectorAll('#auditTable tbody tr');
+  
+  rows.forEach(row => {
+    const method = row.getAttribute('data-method');
+    const status = row.getAttribute('data-status');
+    const user = row.getAttribute('data-user');
+    
+    let showRow = true;
+    
+    if (methodFilter && method !== methodFilter) {
+      showRow = false;
+    }
+    
+    if (statusFilter) {
+      const statusCode = parseInt(status);
+      if (statusFilter === '2xx' && (statusCode < 200 || statusCode >= 300)) {
+        showRow = false;
+      } else if (statusFilter === '3xx' && (statusCode < 300 || statusCode >= 400)) {
+        showRow = false;
+      } else if (statusFilter === '4xx' && (statusCode < 400 || statusCode >= 500)) {
+        showRow = false;
+      } else if (statusFilter === '5xx' && statusCode < 500) {
+        showRow = false;
+      }
+    }
+    
+    if (userFilter && user !== userFilter) {
+      showRow = false;
+    }
+    
+    row.style.display = showRow ? '' : 'none';
+  });
+}
+
+function clearFilters() {
+  document.getElementById('methodFilter').value = '';
+  document.getElementById('statusFilter').value = '';
+  document.getElementById('userFilter').value = '';
+  filterTable();
+}
+</script>
+{% endblock %}
